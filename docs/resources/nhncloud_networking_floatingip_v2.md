@@ -1,0 +1,1 @@
+# Resource: nhncloud_networking_floatingip_v2
