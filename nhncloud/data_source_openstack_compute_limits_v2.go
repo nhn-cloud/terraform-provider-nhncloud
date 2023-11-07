@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/limits"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/limits"
 )
 
 func dataSourceComputeLimitsV2() *schema.Resource {

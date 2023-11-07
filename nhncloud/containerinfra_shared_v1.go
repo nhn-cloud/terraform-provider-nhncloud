@@ -15,11 +15,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gopkg.in/yaml.v2"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/containerinfra/v1/certificates"
-	"github.com/nhn/nhncloud.gophercloud/openstack/containerinfra/v1/clusters"
-	"github.com/nhn/nhncloud.gophercloud/openstack/containerinfra/v1/clustertemplates"
-	"github.com/nhn/nhncloud.gophercloud/openstack/containerinfra/v1/nodegroups"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/certificates"
+	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
+	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
+	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/nodegroups"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/v3/qos"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/qos"
 )
 
 func resourceBlockStorageQosAssociationV3() *schema.Resource {

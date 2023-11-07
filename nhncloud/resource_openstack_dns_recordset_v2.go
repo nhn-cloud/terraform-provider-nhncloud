@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
 )
 
 func resourceDNSRecordSetV2() *schema.Resource {

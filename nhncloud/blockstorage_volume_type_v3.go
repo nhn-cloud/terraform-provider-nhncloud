@@ -1,7 +1,7 @@
 package nhncloud
 
 import (
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/v3/volumetypes"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumetypes"
 )
 
 func expandBlockStorageVolumeTypeV3ExtraSpecs(raw map[string]interface{}) volumetypes.ExtraSpecsOpts {

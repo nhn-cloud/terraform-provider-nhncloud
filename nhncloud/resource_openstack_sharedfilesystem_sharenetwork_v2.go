@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/sharedfilesystems/v2/securityservices"
-	"github.com/nhn/nhncloud.gophercloud/openstack/sharedfilesystems/v2/sharenetworks"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/securityservices"
+	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/sharenetworks"
 )
 
 func resourceSharedFilesystemShareNetworkV2() *schema.Resource {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/qos/rules"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/qos/rules"
 )
 
 func resourceNetworkingQoSRuleV2BuildID(qosPolicyID, qosRuleID string) string {

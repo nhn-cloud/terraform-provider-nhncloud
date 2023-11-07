@@ -1,8 +1,8 @@
 package nhncloud
 
 import (
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 )
 
 const (

@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	octaviapools "github.com/nhn/nhncloud.gophercloud/openstack/loadbalancer/v2/pools"
-	neutronpools "github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	octaviapools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	neutronpools "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
 )
 
 func resourceMemberV2() *schema.Resource {

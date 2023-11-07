@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
 
 func TestNetworkingSubnetV2AllocationPools(t *testing.T) {

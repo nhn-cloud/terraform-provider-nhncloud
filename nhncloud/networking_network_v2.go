@@ -8,16 +8,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/dns"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/external"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/mtu"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/portsecurity"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/provider"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/qos/policies"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vlantransparent"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
-	"github.com/nhn/nhncloud.gophercloud/pagination"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/dns"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/mtu"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsecurity"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/provider"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/qos/policies"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vlantransparent"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/pagination"
 )
 
 type networkExtended struct {

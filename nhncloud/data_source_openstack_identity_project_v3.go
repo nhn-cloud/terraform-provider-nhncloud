@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/projects"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/users"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
 )
 
 func dataSourceIdentityProjectV3() *schema.Resource {

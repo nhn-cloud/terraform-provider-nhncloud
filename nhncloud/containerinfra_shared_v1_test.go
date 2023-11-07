@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/containerinfra/v1/clustertemplates"
+	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
 )
 
 func TestExpandContainerInfraV1LabelsMap(t *testing.T) {

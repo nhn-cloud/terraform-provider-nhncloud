@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/extensions/volumeactions"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/volumeactions"
 )
 
 func expandBlockStorageV2AttachMode(v string) (volumeactions.AttachMode, error) {

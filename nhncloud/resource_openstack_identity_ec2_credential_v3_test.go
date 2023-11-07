@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/extensions/ec2credentials"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/tokens"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/ec2credentials"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 )
 
 func TestAccIdentityV3Ec2Credential_basic(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/servergroups"
-	th "github.com/nhn/nhncloud.gophercloud/testhelper"
-	thclient "github.com/nhn/nhncloud.gophercloud/testhelper/client"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	th "github.com/gophercloud/gophercloud/testhelper"
+	thclient "github.com/gophercloud/gophercloud/testhelper/client"
 )
 
 func TestComputeServerGroupV2CreateOpts(t *testing.T) {

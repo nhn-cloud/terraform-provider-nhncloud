@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/extensions/schedulerhints"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/schedulerhints"
 	"github.com/gophercloud/utils/terraform/hashcode"
 )
 

@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/imageservice/v2/imagedata"
-	"github.com/nhn/nhncloud.gophercloud/openstack/imageservice/v2/imageimport"
-	"github.com/nhn/nhncloud.gophercloud/openstack/imageservice/v2/images"
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/imagedata"
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/imageimport"
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
 )
 
 func resourceImagesImageV2() *schema.Resource {

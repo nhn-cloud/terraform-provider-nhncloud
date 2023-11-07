@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/secgroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 )
 
 func TestExpandComputeSecGroupV2CreateRules(t *testing.T) {

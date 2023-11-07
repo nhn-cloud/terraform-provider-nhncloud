@@ -1,6 +1,6 @@
 package nhncloud
 
-import "github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/keypairs"
+import "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 
 const (
 	computeKeyPairV2UserIDMicroversion = "2.10"

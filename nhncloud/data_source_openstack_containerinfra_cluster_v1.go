@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/containerinfra/v1/clusters"
+	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
 )
 
 func dataSourceContainerInfraCluster() *schema.Resource {

@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/projects"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/rbacpolicies"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/rbacpolicies"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 )
 
 func TestAccNetworkingV2RBACPolicy_basic(t *testing.T) {

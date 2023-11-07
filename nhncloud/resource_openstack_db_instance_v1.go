@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/databases"
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/instances"
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/users"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/databases"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/instances"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/users"
 )
 
 func resourceDatabaseInstanceV1() *schema.Resource {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/extensions/schedulerhints"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/schedulerhints"
 )
 
 func blockStorageExtensionsSchedulerHints() schedulerhints.SchedulerHints {

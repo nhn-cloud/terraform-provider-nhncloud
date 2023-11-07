@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/orders"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/orders"
 )
 
 func keyManagerOrderV1WaitForOrderDeletion(kmClient *gophercloud.ServiceClient, id string) resource.StateRefreshFunc {

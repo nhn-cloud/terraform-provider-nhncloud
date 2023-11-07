@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/instances"
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/users"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/instances"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/users"
 )
 
 func TestAccDatabaseV1User_basic(t *testing.T) {

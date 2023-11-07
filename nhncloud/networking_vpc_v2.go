@@ -3,7 +3,7 @@ package nhncloud
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
+	"github.com/gophercloud/gophercloud"
 	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/vpcs"
 )
 

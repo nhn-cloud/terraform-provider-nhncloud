@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/dns/v2/transfer/accept"
+	"github.com/gophercloud/gophercloud/openstack/dns/v2/transfer/accept"
 )
 
 func TestAccDNSV2TransferAccept_basic(t *testing.T) {

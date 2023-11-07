@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/orchestration/v1/stacks"
+	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stacks"
 )
 
 func TestAccOrchestrationV1Stack_basic(t *testing.T) {

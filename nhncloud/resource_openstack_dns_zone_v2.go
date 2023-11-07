@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 )
 
 func resourceDNSZoneV2() *schema.Resource {

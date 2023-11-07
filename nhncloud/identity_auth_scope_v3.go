@@ -3,10 +3,10 @@ package nhncloud
 import (
 	"fmt"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v2/tenants"
-	tokens2 "github.com/nhn/nhncloud.gophercloud/openstack/identity/v2/tokens"
-	tokens3 "github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/tokens"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/identity/v2/tenants"
+	tokens2 "github.com/gophercloud/gophercloud/openstack/identity/v2/tokens"
+	tokens3 "github.com/gophercloud/gophercloud/openstack/identity/v3/tokens"
 )
 
 func flattenIdentityAuthScopeV3Roles(roles []tokens3.Role) []map[string]string {

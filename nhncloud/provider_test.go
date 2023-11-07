@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"terraform-provider-nhncloud/nhncloud/internal/pathorcontents"
+	"github.com/nhn/terraform-provider-nhncloud/nhncloud/internal/pathorcontents"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"

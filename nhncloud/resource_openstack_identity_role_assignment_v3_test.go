@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/projects"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/roles"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/users"
-	"github.com/nhn/nhncloud.gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/users"
+	"github.com/gophercloud/gophercloud/pagination"
 )
 
 func TestAccIdentityV3RoleAssignment_basic(t *testing.T) {

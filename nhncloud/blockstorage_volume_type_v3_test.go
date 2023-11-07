@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/v3/volumetypes"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumetypes"
 )
 
 func TestExpandBlockStorageVolumeTypeV3ExtraSpecs(t *testing.T) {

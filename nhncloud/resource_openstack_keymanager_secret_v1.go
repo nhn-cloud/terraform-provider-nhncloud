@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/acls"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/secrets"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
 )
 
 func resourceKeyManagerSecretV1() *schema.Resource {

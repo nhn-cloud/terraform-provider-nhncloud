@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/orders"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/secrets"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/orders"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/secrets"
 )
 
 func TestAccKeyManagerOrderV1_basic(t *testing.T) {

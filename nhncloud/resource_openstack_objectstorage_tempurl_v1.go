@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/objectstorage/v1/objects"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 )
 
 func resourceObjectstorageTempurlV1() *schema.Resource {

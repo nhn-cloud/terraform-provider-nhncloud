@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/imageservice/v2/members"
+	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/members"
 )
 
 func TestAccImagesImageAccessAcceptV2_basic(t *testing.T) {

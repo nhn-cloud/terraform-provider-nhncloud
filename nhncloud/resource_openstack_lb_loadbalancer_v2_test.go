@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	octavialoadbalancers "github.com/nhn/nhncloud.gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/security/groups"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/ports"
+	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
 
 func TestAccLBV2LoadBalancer_basic(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/servers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/trunks"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/trunks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 )
 
 func TestAccNetworkingV2Trunk_nosubports(t *testing.T) {

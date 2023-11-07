@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/acls"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/containers"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
 )
 
 func dataSourceKeyManagerContainerV1() *schema.Resource {

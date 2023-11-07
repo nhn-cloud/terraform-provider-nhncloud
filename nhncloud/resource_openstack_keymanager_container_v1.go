@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/acls"
-	"github.com/nhn/nhncloud.gophercloud/openstack/keymanager/v1/containers"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/acls"
+	"github.com/gophercloud/gophercloud/openstack/keymanager/v1/containers"
 )
 
 func resourceKeyManagerContainerV1() *schema.Resource {

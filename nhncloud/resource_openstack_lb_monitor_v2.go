@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	octaviamonitors "github.com/nhn/nhncloud.gophercloud/openstack/loadbalancer/v2/monitors"
-	neutronmonitors "github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	octaviamonitors "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
+	neutronmonitors "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
 )
 
 func resourceMonitorV2() *schema.Resource {

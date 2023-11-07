@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
+	"github.com/gophercloud/gophercloud"
 	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/vpcsubnets"
 )
 

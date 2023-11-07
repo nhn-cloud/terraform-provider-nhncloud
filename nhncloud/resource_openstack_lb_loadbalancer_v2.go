@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	octavialoadbalancers "github.com/nhn/nhncloud.gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	neutronloadbalancers "github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
+	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
+	neutronloadbalancers "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 )
 
 func resourceLoadBalancerV2() *schema.Resource {

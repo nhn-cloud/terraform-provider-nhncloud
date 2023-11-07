@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 )
 
 func dataSourceDNSZoneV2() *schema.Resource {

@@ -5,9 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/databases"
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/users"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/databases"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/users"
 )
 
 func expandDatabaseUserV1Databases(rawDatabases []interface{}) databases.BatchCreateOpts {

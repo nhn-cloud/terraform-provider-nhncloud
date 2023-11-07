@@ -7,11 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/layer3/portforwarding"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/ports"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/portforwarding"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
 
 func TestAccNetworkingV2Portforwarding_basic(t *testing.T) {

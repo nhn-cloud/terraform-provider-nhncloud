@@ -7,14 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/secgroups"
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/servers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/portsecurity"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/qos/policies"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/ports"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsecurity"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/qos/policies"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
 
 type testNetworkWithExtensions struct {

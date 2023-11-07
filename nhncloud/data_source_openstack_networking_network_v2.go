@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/external"
-	mtuext "github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/mtu"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vlantransparent"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
+	mtuext "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/mtu"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vlantransparent"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
 
 func dataSourceNetworkingNetworkV2() *schema.Resource {

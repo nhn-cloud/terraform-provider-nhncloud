@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	octavialisteners "github.com/nhn/nhncloud.gophercloud/openstack/loadbalancer/v2/listeners"
-	neutronlisteners "github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
+	octavialisteners "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	neutronlisteners "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
 )
 
 func resourceListenerV2() *schema.Resource {

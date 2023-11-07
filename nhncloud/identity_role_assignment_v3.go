@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/roles"
-	"github.com/nhn/nhncloud.gophercloud/pagination"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/roles"
+	"github.com/gophercloud/gophercloud/pagination"
 )
 
 // Role assignments have no ID in OpenStack.

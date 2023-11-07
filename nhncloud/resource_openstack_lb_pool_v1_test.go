@@ -7,13 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/secgroups"
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/servers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas/monitors"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas/pools"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/lbaas/vips"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas/monitors"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas/pools"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas/vips"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 )
 
 func TestAccLBV1Pool_basic(t *testing.T) {

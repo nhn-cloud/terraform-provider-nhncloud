@@ -1,17 +1,17 @@
 package nhncloud
 
 import (
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/subnetpools"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vpnaas/endpointgroups"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vpnaas/ikepolicies"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vpnaas/ipsecpolicies"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vpnaas/services"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/networks"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/ports"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/subnetpools"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/endpointgroups"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/ikepolicies"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/ipsecpolicies"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/services"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/vpnaas/siteconnections"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
 	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/vpcs"
 )
 

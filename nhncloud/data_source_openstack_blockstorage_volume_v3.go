@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/extensions/volumehost"
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/volumehost"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 )
 
 func dataSourceBlockStorageVolumeV3() *schema.Resource {

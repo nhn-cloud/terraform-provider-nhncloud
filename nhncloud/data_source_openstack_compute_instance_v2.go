@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/extensions/tags"
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/flavors"
-	"github.com/nhn/nhncloud.gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/tags"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 )
 
 func dataSourceComputeInstanceV2() *schema.Resource {

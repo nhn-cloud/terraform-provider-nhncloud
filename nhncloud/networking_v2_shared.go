@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
+	"github.com/gophercloud/gophercloud"
 )
 
 func networkingV2ReadAttributesTags(d *schema.ResourceData, tags []string) {

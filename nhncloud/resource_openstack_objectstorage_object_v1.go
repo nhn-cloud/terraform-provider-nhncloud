@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/go-homedir"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/objectstorage/v1/objects"
+	"github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
 )
 
 func resourceObjectStorageObjectV1() *schema.Resource {

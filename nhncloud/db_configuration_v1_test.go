@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/db/v1/configurations"
+	"github.com/gophercloud/gophercloud/openstack/db/v1/configurations"
 )
 
 func TestExpandDatabaseConfigurationV1Datastore(t *testing.T) {

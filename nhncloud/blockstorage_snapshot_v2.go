@@ -3,7 +3,7 @@ package nhncloud
 import (
 	"sort"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/blockstorage/v2/snapshots"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/snapshots"
 )
 
 // blockStorageV2SnapshotSort represents a sortable slice of block storage

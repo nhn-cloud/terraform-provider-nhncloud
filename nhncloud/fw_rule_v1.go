@@ -1,8 +1,8 @@
 package nhncloud
 
 import (
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/fwaas/rules"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/fwaas/rules"
 )
 
 // RuleCreateOpts represents the attributes used when creating a new firewall rule.

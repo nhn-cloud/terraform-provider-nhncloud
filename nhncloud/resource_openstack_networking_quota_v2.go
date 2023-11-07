@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/quotas"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/quotas"
 )
 
 func resourceNetworkingQuotaV2() *schema.Resource {

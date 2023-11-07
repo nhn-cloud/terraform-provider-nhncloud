@@ -9,13 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/dns"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/extradhcpopts"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/portsbinding"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/portsecurity"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/extensions/qos/policies"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/dns"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/extradhcpopts"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsbinding"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/portsecurity"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/qos/policies"
+	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/utils/terraform/hashcode"
 )
 

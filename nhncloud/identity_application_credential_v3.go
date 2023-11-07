@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/identity/v3/applicationcredentials"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/applicationcredentials"
 )
 
 func flattenIdentityApplicationCredentialRolesV3(roles []applicationcredentials.Role) []string {

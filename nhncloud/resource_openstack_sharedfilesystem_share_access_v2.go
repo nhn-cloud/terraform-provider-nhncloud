@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	gophercloud "github.com/nhn/nhncloud.gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/sharedfilesystems/apiversions"
-	"github.com/nhn/nhncloud.gophercloud/openstack/sharedfilesystems/v2/errors"
-	"github.com/nhn/nhncloud.gophercloud/openstack/sharedfilesystems/v2/shares"
+	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/apiversions"
+	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/errors"
+	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
 )
 
 func resourceSharedFilesystemShareAccessV2() *schema.Resource {
