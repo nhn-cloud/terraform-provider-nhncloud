@@ -4,20 +4,9 @@ Terraform Provider for NHN Cloud
 Requirements
 ------------
 
-This is an example in `macOS / Apple silicon` architecture.
-
 * [Terraform](https://www.terraform.io/downloads.html) 1.0.x
-```sh
-$ terraform version
-Terraform v1.0.0
-on darwin_arm64
-```
 
 * [Go](https://golang.org/doc/install) 1.20 (to build the provider plugin)
-```sh
-$ go version
-go version go1.20.5 darwin/arm64
-```
 
 
 Building The Provider
@@ -39,7 +28,7 @@ $ make build
 Provider Usage
 -----------------
 
-Please see the documentation at [registry.terraform.io]().
+Please see the documentation at [NHN Cloud Terraform Provider documentation]().
 
 Or you can also check how to use Terraform in the NHN Cloud user guide [here](https://docs.nhncloud.com/ko/Compute/Instance/ko/terraform-guide/).
 
