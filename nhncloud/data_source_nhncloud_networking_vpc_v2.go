@@ -247,7 +247,7 @@ func dataSourceNetworkingVPCV2Read(ctx context.Context, d *schema.ResourceData, 
 	config := meta.(*Config)
 	networkingClient, err := config.NetworkingV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	// @tc-iaas-compute/1452
@@ -279,10 +279,10 @@ func dataSourceNetworkingVPCV2Read(ctx context.Context, d *schema.ResourceData, 
 	var network vpcs.NetworkDetail
 	err = vpcs.Get(networkingClient, tmpAllNetworks[0].ID).ExtractInto(&network)
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error getting openstack_networking_vpc_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error getting nhncloud_networking_vpc_v2"))
 	}
 
-	log.Printf("[DEBUG] Retrieved openstack_networking_vpc_v2 %s: %+v", network.ID, network)
+	log.Printf("[DEBUG] Retrieved nhncloud_networking_vpc_v2 %s: %+v", network.ID, network)
 
 	d.SetId(network.ID)
 	d.Set("region", GetRegion(d, config))

@@ -20,7 +20,7 @@ type Config struct {
 	auth.Config
 }
 
-// Provider returns a schema.Provider for OpenStack.
+// Provider returns a schema.Provider for NHN Cloud.
 func Provider() *schema.Provider {
 	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -447,7 +447,7 @@ func init() {
 
 		"cloud": "An entry in a `clouds.yaml` file to use.",
 
-		"region": "The OpenStack region to connect to.",
+		"region": "The NHN Cloud region to connect to.",
 
 		"user_name": "Username to login with.",
 
