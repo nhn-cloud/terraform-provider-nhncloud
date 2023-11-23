@@ -175,7 +175,6 @@ func resourceObjectStorageContainerV1Read(ctx context.Context, d *schema.Resourc
 	}
 
 	result := containers.Get(objectStorageClient, d.Id(), nil)
-
 	if result.Err != nil {
 		return diag.FromErr(CheckDeleted(d, result.Err, "container"))
 	}
@@ -287,7 +286,7 @@ func resourceObjectStorageContainerV1Update(ctx context.Context, d *schema.Resou
 	}
 
 	// remove legacy versioning first, before enabling the new versioning
-	if updateOpts.VersionsEnabled != nil && *updateOpts.VersionsEnabled == true &&
+	if updateOpts.VersionsEnabled != nil && *updateOpts.VersionsEnabled &&
 		(updateOpts.RemoveVersionsLocation == "true" || updateOpts.RemoveHistoryLocation == "true") {
 		opts := containers.UpdateOpts{
 			RemoveVersionsLocation: "true",
@@ -301,7 +300,7 @@ func resourceObjectStorageContainerV1Update(ctx context.Context, d *schema.Resou
 
 	// remove new versioning first, before enabling the legacy versioning
 	if (updateOpts.VersionsLocation != "" || updateOpts.HistoryLocation != "") &&
-		updateOpts.VersionsEnabled != nil && *updateOpts.VersionsEnabled == false {
+		updateOpts.VersionsEnabled != nil && !*updateOpts.VersionsEnabled {
 		opts := containers.UpdateOpts{
 			VersionsEnabled: updateOpts.VersionsEnabled,
 		}
@@ -370,7 +369,7 @@ func resourceObjectStorageContainerV1Delete(ctx context.Context, d *schema.Resou
 			}
 			return resourceObjectStorageContainerV1Delete(ctx, d, meta)
 		}
-		return diag.Errorf("error deleting objectstorage_container_v1 '%s': %s", d.Id(), err)
+		return diag.FromErr(CheckDeleted(d, err, fmt.Sprintf("error deleting objectstorage_container_v1 '%s'", d.Id())))
 	}
 
 	d.SetId("")
