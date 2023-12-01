@@ -284,6 +284,28 @@ func resourceComputeInstanceV2() *schema.Resource {
 							Optional: true,
 							ForceNew: true,
 						},
+						"test": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"nhn_encryption": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"skm_appkey": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"skm_key_id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1344,7 +1366,7 @@ func resourceInstanceMetadataV2(d *schema.ResourceData) map[string]string {
 	return m
 }
 
-func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
+func resourceInstanceBlockDevicesV2(d *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
 	blockDeviceOpts := make([]bootfromvolume.BlockDevice, len(bds))
 	for i, bd := range bds {
 		bdM := bd.(map[string]interface{})
@@ -1357,6 +1379,17 @@ func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) (
 			VolumeType:          bdM["volume_type"].(string),
 			DeviceType:          bdM["device_type"].(string),
 			DiskBus:             bdM["disk_bus"].(string),
+		}
+
+		if e, ok := d.GetOk("nhn_encryption"); ok {
+			ne := (e.([]interface{}))[0].(map[string]interface{})
+
+			nhnEncryption := bootfromvolume.NhnEncryption{
+				SkmAppkey: ne["skm_appkey"].(string),
+				SkmKeyId:  ne["skm_key_id"].(string),
+			}
+
+			blockDeviceOpts[i].NhnEncryption = &nhnEncryption
 		}
 
 		sourceType := bdM["source_type"].(string)
