@@ -9,7 +9,7 @@ OS_IMPLEMENTATION=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 HW_PLATFORM=$(shell uname -m)
 OS_HW_STR=$(OS_IMPLEMENTATION)_$(HW_PLATFORM)
 
-GO_BIN_PATH=~/go/bin/terraform-provider-$(PKG_NAME)
+GO_BIN_PATH=$(GOPATH)/bin/terraform-provider-$(PKG_NAME)
 TF_BIN_PATH=~/.terraform.d/plugins/terraform.local/local/$(PKG_NAME)/$(VERSION_STR)/$(OS_HW_STR)/terraform-provider-$(PKG_NAME)_v$(VERSION_STR)
 
 platforms := darwin/amd64 darwin/arm64 \
