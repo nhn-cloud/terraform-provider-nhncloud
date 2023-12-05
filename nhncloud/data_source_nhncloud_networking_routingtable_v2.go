@@ -177,27 +177,9 @@ func dataSourceNetworkingRoutingtableV2Read(ctx context.Context, d *schema.Resou
 	if err := d.Set("subnets", routingtableDetail.Subnets); err != nil {
 		log.Printf("[DEBUG] Unable to set subnets: %s", err)
 	}
-
-	//routes := make([]routingtables.Route, 0, len(routingtableDetail.Routes))
-	//for _, v := range routingtableDetail.Routes {
-	//	routes = append(routes, routingtables.Route{
-	//		ID: v.ID,
-	//		CIDR:  v.CIDR,
-	//		Gateway: v.Gateway,
-	//		GatewayID: v.GatewayID,
-	//		RoutingtableID: v.RoutingtableID,
-	//		TenantID: v.TenantID,
-	//		Mask: v.Mask,
-	//	})
-	//}
 	if err = d.Set("routes", routingtableDetail.Routes); err != nil {
 		log.Printf("[DEBUG] Unable to set routes: %s", err)
 	}
-	//d.Set("region", GetRegion(d, config))
-
-	//for key, val := range NewTransformer().Transform(&routingtableDetail) {
-	//	d.Set(key, val)
-	//}
 
 	return nil
 }
