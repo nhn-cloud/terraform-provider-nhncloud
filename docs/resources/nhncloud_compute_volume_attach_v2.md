@@ -25,15 +25,14 @@ resource "nhncloud_compute_volume_attach_v2" "volume_to_instance"{
 
 ## Argument Reference
 
-* `instance_id` - (Required) Target instance to attach the block storage.
-* `volume_id` - (Required) UUID of block storage to be attached.
+* `instance_id` - (Required) The target instance to attach the block storage to.
+* `volume_id` - (Required) The UUID of the block storage to be attached.
 
 ## Attribute Reference
 
 In addition to the above, the following attributes are exported:
 
-* `data` - This is a map of key/value pairs that contain the connection
-  information. You will want to pass this information to a provisioner
+* `data` - This is a map of key/value pairs that contain the connection information. You will want to pass this information to a provisioner
   script to finalize the connection. See below for more information.
 * `driver_volume_type` - The storage driver that the volume is based on.
 * `mount_point_base` - A mount point base name for shared storage.

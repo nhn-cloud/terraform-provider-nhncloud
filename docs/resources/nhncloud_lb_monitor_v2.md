@@ -19,14 +19,14 @@ resource "nhncloud_lb_monitor_v2" "tf_monitor_01"{
 
 ## Argument Reference
 
-* `name` - (Optional) Name of health monitor to create.
-* `pool_id` - (Required) ID of pool to be connected with health monitor to create.
+* `name` - (Optional) The name of the health monitor to create.
+* `pool_id` - (Required) The ID of the pool to be connected with the health monitor to create.
 * `type` - (Required) Support `TCP`, `HTTP`, and `HTTPS` only.
 * `delay` - (Required) Interval of status check.
 * `timeout` - (Required) Timeout for status check (seconds)<br>Timeout must have smaller value than delay.
-* `max_retries` - (Required) Number of maximum retries, between 1 and 10.
-* `url_path` - (Optional) Request URL for status check.
-* `http_method` - (Optional) HTTP method to use for status check<br>The default is GET.
+* `max_retries` - (Required) The number of maximum retries, between 1 and 10.
+* `url_path` - (Optional) The request URL for status check.
+* `http_method` - (Optional) The HTTP method to use for status check<br>The default is GET.
 * `expected_codes` - (Optional) HTTP(S) response code of members to be considered as normal status <br/>expected_codes can be set as list (`200,201,202`) or range (`200-202`).
 * `admin_state_up` - (Optional) Administrator control status.
 

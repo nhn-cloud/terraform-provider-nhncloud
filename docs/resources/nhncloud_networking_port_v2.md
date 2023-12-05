@@ -12,14 +12,14 @@ resource "nhncloud_networking_port_v2" "port_1" {
 
 ## Argument Reference
 
-* `name` - (Required) Port name to create.
-* `description` - (Optional) Port description.
-* `network_id` - (Required) ID of VPC network to create a port.
-* `tenant_id` - (Optional) Tenant ID of the port to create.
-* `device_id` - (Optional) Device ID to which the created port will be connected.
-* `fixed_ip` - (Optional) Setting information of fixed IP of a port to create<br>Must not include the `no_fixed_ip` attribute.
-* `fixed_ip.subent_id` - (Required) Subnet ID of a fixed IP.
-* `fixed_ip.ip_address` - (Optional) Address of fixed IP to configure.
+* `name` - (Required) The port name to create.
+* `description` - (Optional) The port description.
+* `network_id` - (Required) The ID of the VPC network to create a port.
+* `tenant_id` - (Optional) The tenant ID of the port to create.
+* `device_id` - (Optional) The device ID to which the created port will be connected.
+* `fixed_ip` - (Optional) Setting information of the fixed IP of a port to create<br>Must not include the `no_fixed_ip` attribute.
+* `fixed_ip.subent_id` - (Required) The Subnet ID of a fixed IP.
+* `fixed_ip.ip_address` - (Optional) The address of fixed IP to configure.
 * `no_fixed_ip` - (Optional) `true`: Port without fixed IP<br>Must not include the `fixed_ip` attribute.
 * `admin_state_up` - (Optional) Administrator control status<br> `true`: Running<br>`false`: Suspended.
 

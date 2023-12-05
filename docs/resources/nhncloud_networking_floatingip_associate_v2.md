@@ -31,8 +31,8 @@ resource "nhncloud_networking_floatingip_associate_v2" "fip_associate" {
 
 ## Argument Reference
 
-* `floating_ip` - (Required) Floating IP to associate.
-* `port_id` - (Required) UUID of port to be associated with floating IP.
+* `floating_ip` - (Required) The floating IP to associate.
+* `port_id` - (Required) The UUID of the port to be associated with the floating IP.
 
 ## Attribute Reference
 

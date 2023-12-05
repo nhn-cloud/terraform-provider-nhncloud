@@ -20,21 +20,21 @@ data "nhncloud_images_image_v2" "windows2016_20200218" {
 
 ## Argument Reference
 
-* `name` - (Optional) Name of image to query. To check the image name, go to **Compute > Instance** on NHN Cloud console and click **Create Instance**. The information can be found on the list of images provided by NHN Cloud. The image name must be entered as **<Image Description>** which shows up on NHN Cloud console. If the Language item exists, follow the format **"<Image Description> <Language>"** like the above example.
-* `size_min` - (Optional) Minimum size of image to query (bytes).
-* `size_max` - (Optional) Maximum size of image to query (bytes).
-* `properties` - (Optional) Attributes of image to query. Images that match all attributes are queried.
+* `name` - (Optional) The name of the image to query. To check the image name, go to **Compute > Instance** on the NHN Cloud console and click **Create Instance**. The information can be found on the list of images provided by NHN Cloud. The image name must be entered as **<Image Description>** which appears on the NHN Cloud console. If the Language item exists, follow the format **"<Image Description> <Language>"** as shown in the above.
+* `size_min` - (Optional) The minimum size of the image to query (bytes).
+* `size_max` - (Optional) The maximum size of the image to query (bytes).
+* `properties` - (Optional) The attributes of the image to query. Images that match all attributes are queried.
 * `sort_key` - (Optional) Sort the list of images queried by particular attributes. The default is `name`.
-* `sort_direction` - (Optional) Sorting order of the list of queried images 
-  * `asc`: Ascending order (Default) 
+* `sort_direction` - (Optional) The sorting order of the list of queried images. 
+  * `asc`: Ascending order (Default).
   * `desc`: Descending order.
-* `owner` - (Optional) ID of tenant which includes the image to query.
+* `owner` - (Optional) The ID of the tenant which includes the image to query.
 * `tag` - (Optional) Search images with a particular tag.
-* `visibility` - (Optional) Visibility of image to query <br>Select only one among public, private, and shared. If omitted, the list with all types of images is returned.
-* `most_recent` - (Optional) 
+* `visibility` - (Optional) The visibility of the image to query <br>Select only one among public, private, and shared. If omitted, the list with all types of images is returned.
+* `most_recent` - (Optional)
   * `true`: Select the most recently created image from the list of queried images 
-  * `false`: Select images in the queried order.
-* `member_status` - (Optional) Status of image member to query. One among `accepted`,`pending`, `rejected`, and `all`.
+  * `false`: Select images in the order they were queried.
+* `member_status` - (Optional) The status of the image member to query. One among `accepted`,`pending`, `rejected`, and `all`.
 
 ## Attribute Reference
 
@@ -44,17 +44,13 @@ are exported:
 * `checksum` - The checksum of the data associated with the image.
 * `container_format`: The format of the image's container.
 * `disk_format`: The format of the image's disk.
-* `file` - the trailing path after the glance endpoint that represent the
-location of the image or the path to retrieve it.
-* `metadata` - The metadata associated with the image.
-   Image metadata allow for meaningfully define the image properties
-   and tags. See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.
-* `min_disk_gb` - The minimum amount of disk space required to use the image.
-* `min_ram_mb` - The minimum amount of ram required to use the image.
-* `properties` - Freeform information about the image.
+* `file` - The trailing path after the glance endpoint that represent the location of the image or the path to retrieve it.
+* `metadata` - The metadata associated with the image. Image metadata allow for meaningfully define the image properties and tags. See https://docs.openstack.org/glance/latest/user/metadefs-concepts.html.
+* `min_disk_gb` - The minimum amount of disk space required to use image.
+* `min_ram_mb` - The minimum amount of ram required to use image.
+* `properties` - The freeform information about the image.
 * `protected` - Whether or not the image is protected.
-* `schema` - The path to the JSON-schema that represent
-   the image or image
+* `schema` - The path to the JSON-schema that represent the image or image
 * `size_bytes` - The size of the image (in bytes).
 * `created_at` - The date the image was created.
 * `updated_at` - The date the image was last updated.

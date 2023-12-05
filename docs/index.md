@@ -37,9 +37,9 @@ provider "nhncloud" {
 * `password` - (Required) Use **API Password** that you saved in **Set API Endpoint**. Regarding how to set API passwords, see **User Guide > Compute > Instance > API Preparations**.
 * `auth_url` - (Required) Specify the address of the NHN Cloud identification service. From **Compute > Instance > Management** on NHN Cloud console, click **Set API Endpoint** to check Identity URL.
 * `region` - (Required) Enter the region to manage NHN Cloud resources.
-    * `KR1`: Korea (Pangyo) Region
-    * `KR2`: Korea (Pyeongchon) Region
-    * `JP1`: Japan (Tokyo) Region
+    * `KR1`: Korea (Pangyo) Region.
+    * `KR2`: Korea (Pyeongchon) Region.
+    * `JP1`: Japan (Tokyo) Region.
 
 On the path where the provider configuration file is located, use the `init` command to initialize Terraform.
 
