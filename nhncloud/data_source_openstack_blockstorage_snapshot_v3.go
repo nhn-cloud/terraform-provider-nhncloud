@@ -78,16 +78,16 @@ func dataSourceBlockStorageSnapshotV3Read(ctx context.Context, d *schema.Resourc
 
 	allPages, err := snapshots.List(client, listOpts).AllPages()
 	if err != nil {
-		return diag.Errorf("Unable to query openstack_blockstorage_snapshots_v3: %s", err)
+		return diag.Errorf("Unable to query nhncloud_blockstorage_snapshots_v3: %s", err)
 	}
 
 	allSnapshots, err := snapshots.ExtractSnapshots(allPages)
 	if err != nil {
-		return diag.Errorf("Unable to retrieve openstack_blockstorage_snapshots_v3: %s", err)
+		return diag.Errorf("Unable to retrieve nhncloud_blockstorage_snapshots_v3: %s", err)
 	}
 
 	if len(allSnapshots) < 1 {
-		return diag.Errorf("Your openstack_blockstorage_snapshot_v3 query returned no results. " +
+		return diag.Errorf("Your nhncloud_blockstorage_snapshot_v3 query returned no results. " +
 			"Please change your search criteria and try again.")
 	}
 
@@ -98,7 +98,7 @@ func dataSourceBlockStorageSnapshotV3Read(ctx context.Context, d *schema.Resourc
 		if recent {
 			snapshot = dataSourceBlockStorageV3MostRecentSnapshot(allSnapshots)
 		} else {
-			log.Printf("[DEBUG] Multiple openstack_blockstorage_snapshot_v3 results found: %#v", allSnapshots)
+			log.Printf("[DEBUG] Multiple nhncloud_blockstorage_snapshot_v3 results found: %#v", allSnapshots)
 
 			return diag.Errorf("Your query returned more than one result. Please try a more " +
 				"specific search criteria, or set `most_recent` attribute to true.")

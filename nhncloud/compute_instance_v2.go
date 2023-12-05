@@ -1,5 +1,5 @@
 // This set of code handles all functions required to configure networking
-// on an openstack_compute_instance_v2 resource.
+// on an nhncloud_compute_instance_v2 resource.
 //
 // This is a complicated task because it's not possible to obtain all
 // information in a single API call. In fact, it even traverses multiple
@@ -176,7 +176,7 @@ func getInstanceNetworkInfo(d *schema.ResourceData, meta interface{}, queryType,
 
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack compute client: %s", err)
+		return nil, fmt.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	networkInfo, err := getInstanceNetworkInfoNovaNet(computeClient, queryType, queryTerm)
@@ -437,7 +437,7 @@ func flattenInstanceNetworks(d *schema.ResourceData, meta interface{}) ([]map[st
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack compute client: %s", err)
+		return nil, fmt.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	server, err := servers.Get(computeClient, d.Id()).Extract()
