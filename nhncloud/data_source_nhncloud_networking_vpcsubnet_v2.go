@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/vpcsubnets"
+	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcsubnets"
 )
 
 func dataSourceNetworkingVPCSubnetV2() *schema.Resource {
@@ -177,7 +177,7 @@ func dataSourceNetworkingVPCSubnetV2Read(ctx context.Context, d *schema.Resource
 	config := meta.(*Config)
 	networkingClient, err := config.NetworkingV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	listOpts := vpcsubnets.ListOpts{}
@@ -201,29 +201,29 @@ func dataSourceNetworkingVPCSubnetV2Read(ctx context.Context, d *schema.Resource
 
 	pages, err := vpcsubnets.List(networkingClient, listOpts).AllPages()
 	if err != nil {
-		return diag.Errorf("Unable to retrieve openstack_networking_vpcsubnet_v2: %s", err)
+		return diag.Errorf("Unable to retrieve nhncloud_networking_vpcsubnet_v2: %s", err)
 	}
 
 	// List API which is pre-flight
 	allSubnets, err := vpcsubnets.ExtractSubnets(pages)
 	if err != nil {
-		return diag.Errorf("Unable to extract openstack_networking_vpcsubnet_v2: %s", err)
+		return diag.Errorf("Unable to extract nhncloud_networking_vpcsubnet_v2: %s", err)
 	}
 
 	if len(allSubnets) < 1 {
-		return diag.Errorf("Your query returned no openstack_networking_vpcsubnet_v2. " +
+		return diag.Errorf("Your query returned no nhncloud_networking_vpcsubnet_v2. " +
 			"Please change your search criteria and try again.")
 	}
 
 	if len(allSubnets) > 1 {
-		return diag.Errorf("Your query returned more than one openstack_networking_vpcsubnet_v2." +
+		return diag.Errorf("Your query returned more than one nhncloud_networking_vpcsubnet_v2." +
 			" Please try a more specific search criteria")
 	}
 
 	subnet := allSubnets[0]
 	subnetDetail, err := vpcsubnets.Get(networkingClient, subnet.ID).Extract()
 
-	log.Printf("[DEBUG] Retrieved openstack_networking_vpcsubnet_v2 %s: %+v", subnet.ID, subnet)
+	log.Printf("[DEBUG] Retrieved nhncloud_networking_vpcsubnet_v2 %s: %+v", subnet.ID, subnet)
 
 	d.SetId(subnet.ID)
 	d.Set("region", GetRegion(d, config))

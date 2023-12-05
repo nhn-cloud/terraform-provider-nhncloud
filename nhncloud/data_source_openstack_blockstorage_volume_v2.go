@@ -80,20 +80,20 @@ func dataSourceBlockStorageVolumeV2Read(ctx context.Context, d *schema.ResourceD
 
 	allPages, err := volumes.List(client, listOpts).AllPages()
 	if err != nil {
-		return diag.Errorf("Unable to query openstack_blockstorage_volume_v2: %s", err)
+		return diag.Errorf("Unable to query nhncloud_blockstorage_volume_v2: %s", err)
 	}
 
 	allVolumes, err := volumes.ExtractVolumes(allPages)
 	if err != nil {
-		return diag.Errorf("Unable to retrieve openstack_blockstorage_volume_v2: %s", err)
+		return diag.Errorf("Unable to retrieve nhncloud_blockstorage_volume_v2: %s", err)
 	}
 
 	if len(allVolumes) > 1 {
-		return diag.Errorf("Your openstack_blockstorage_volume_v2 query returned multiple results")
+		return diag.Errorf("Your nhncloud_blockstorage_volume_v2 query returned multiple results")
 	}
 
 	if len(allVolumes) < 1 {
-		return diag.Errorf("Your openstack_blockstorage_volume_v2 query returned no results")
+		return diag.Errorf("Your nhncloud_blockstorage_volume_v2 query returned no results")
 	}
 
 	dataSourceBlockStorageVolumeV2Attributes(d, allVolumes[0])
