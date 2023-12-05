@@ -21,7 +21,6 @@ import (
 	volumesV2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	volumesV3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
@@ -34,6 +33,7 @@ import (
 	flavorsutils "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imagesutils "github.com/gophercloud/utils/openstack/imageservice/v2/images"
 	"github.com/gophercloud/utils/terraform/hashcode"
+	"github.com/nhn/nhncloud.gophercloud/nhncloud/compute/v2/extensions/bootfromvolume"
 )
 
 func resourceComputeInstanceV2() *schema.Resource {
