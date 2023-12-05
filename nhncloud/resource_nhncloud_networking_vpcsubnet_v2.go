@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/openstack/networking/v2/vpcsubnets"
+	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcsubnets"
 )
 
 func resourceNetworkingVPCSubnetV2() *schema.Resource {
@@ -187,7 +187,7 @@ func resourceNetworkingVPCSubnetV2Create(ctx context.Context, d *schema.Resource
 	config := meta.(*Config)
 	networkingClient, err := config.NetworkingV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	createOpts := vpcsubnets.CreateOpts{
@@ -204,18 +204,18 @@ func resourceNetworkingVPCSubnetV2Create(ctx context.Context, d *schema.Resource
 			return diag.Errorf("Invalid CIDR %s: %s", cidr, err)
 		}
 		if netAddr.String() != cidr {
-			return diag.Errorf("cidr %s doesn't match subnet address %s for openstack_networking_vpcsubnet_v2", cidr, netAddr.String())
+			return diag.Errorf("cidr %s doesn't match subnet address %s for nhncloud_networking_vpcsubnet_v2", cidr, netAddr.String())
 		}
 		createOpts.CIDR = cidr
 	}
 
-	log.Printf("[DEBUG] openstack_networking_vpcsubnet_v2 create options: %#v", createOpts)
+	log.Printf("[DEBUG] nhncloud_networking_vpcsubnet_v2 create options: %#v", createOpts)
 	s, err := vpcsubnets.Create(networkingClient, createOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Error creating openstack_networking_vpcsubnet_v2: %s", err)
+		return diag.Errorf("Error creating nhncloud_networking_vpcsubnet_v2: %s", err)
 	}
 
-	log.Printf("[DEBUG] Waiting for openstack_networking_vpcsubnet_v2 %s to become available", s.ID)
+	log.Printf("[DEBUG] Waiting for nhncloud_networking_vpcsubnet_v2 %s to become available", s.ID)
 	// Backend returns "available", but callback represents it to "ACTIVE"
 	stateConf := &resource.StateChangeConf{
 		Target:     []string{"ACTIVE"},
@@ -227,7 +227,7 @@ func resourceNetworkingVPCSubnetV2Create(ctx context.Context, d *schema.Resource
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return diag.Errorf("Error waiting for openstack_networking_vpcsubnet_v2 %s to become available: %s", s.ID, err)
+		return diag.Errorf("Error waiting for nhncloud_networking_vpcsubnet_v2 %s to become available: %s", s.ID, err)
 	}
 
 	// Set routingtable_id if provided.
@@ -237,13 +237,13 @@ func resourceNetworkingVPCSubnetV2Create(ctx context.Context, d *schema.Resource
 			if diagnostics != nil {
 				return diag.Errorf("Tried deleting the vpcsubnet created, due to the routingtable attaching error, but even it failed: %s: %s", diagnostics[0].Summary, err)
 			}
-			return diag.Errorf("Error creating openstack_networking_vpcsubnet_v2, as Error attaching routingtable: %s", err)
+			return diag.Errorf("Error creating nhncloud_networking_vpcsubnet_v2, as Error attaching routingtable: %s", err)
 		}
 	}
 
 	d.SetId(s.ID)
 
-	log.Printf("[DEBUG] Created openstack_networking_vpcsubnet_v2 %s: %#v", s.ID, s)
+	log.Printf("[DEBUG] Created nhncloud_networking_vpcsubnet_v2 %s: %#v", s.ID, s)
 	return resourceNetworkingVPCSubnetV2Read(ctx, d, meta)
 }
 
@@ -251,15 +251,15 @@ func resourceNetworkingVPCSubnetV2Read(ctx context.Context, d *schema.ResourceDa
 	config := meta.(*Config)
 	networkingClient, err := config.NetworkingV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	subnetDetail, err := vpcsubnets.Get(networkingClient, d.Id()).Extract()
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error getting openstack_networking_vpcsubnet_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error getting nhncloud_networking_vpcsubnet_v2"))
 	}
 
-	log.Printf("[DEBUG] Retrieved openstack_networking_vpcsubnet_v2 %s: %#v", d.Id(), subnetDetail)
+	log.Printf("[DEBUG] Retrieved nhncloud_networking_vpcsubnet_v2 %s: %#v", d.Id(), subnetDetail)
 
 	d.Set("region", GetRegion(d, config))
 
@@ -274,7 +274,7 @@ func resourceNetworkingVPCSubnetV2Update(ctx context.Context, d *schema.Resource
 	config := meta.(*Config)
 	networkingClient, err := config.NetworkingV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	var (
@@ -289,7 +289,7 @@ func resourceNetworkingVPCSubnetV2Update(ctx context.Context, d *schema.Resource
 		finalUpdateOpts = updateOpts
 		_, err = vpcsubnets.Update(networkingClient, d.Id(), finalUpdateOpts).Extract()
 		if err != nil {
-			return diag.Errorf("Error updating openstack_networking_vpcsubnet_v2 %s: %s", d.Id(), err)
+			return diag.Errorf("Error updating nhncloud_networking_vpcsubnet_v2 %s: %s", d.Id(), err)
 		}
 	}
 
@@ -297,11 +297,11 @@ func resourceNetworkingVPCSubnetV2Update(ctx context.Context, d *schema.Resource
 		if v, ok := d.GetOk("routingtable_id"); ok {
 			detachRoutingtable(networkingClient, d.Id())
 			if err = attachRoutingtable(networkingClient, v.(string), d.Id()); err != nil {
-				return diag.Errorf("Error updating openstack_networking_vpcsubnet_v2, as Error attaching routingtable: %s", err)
+				return diag.Errorf("Error updating nhncloud_networking_vpcsubnet_v2, as Error attaching routingtable: %s", err)
 			}
 		} else {
 			if err = detachRoutingtable(networkingClient, d.Id()); err != nil {
-				return diag.Errorf("Error updating openstack_networking_vpcsubnet_v2, as Error detaching routingtable: %s", err)
+				return diag.Errorf("Error updating nhncloud_networking_vpcsubnet_v2, as Error detaching routingtable: %s", err)
 			}
 		}
 	}
@@ -313,11 +313,11 @@ func resourceNetworkingVPCSubnetV2Delete(ctx context.Context, d *schema.Resource
 	config := meta.(*Config)
 	networkingClient, err := config.NetworkingV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	if err := vpcsubnets.Delete(networkingClient, d.Id()).ExtractErr(); err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error deleting openstack_networking_vpcsubnet_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_networking_vpcsubnet_v2"))
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -331,7 +331,7 @@ func resourceNetworkingVPCSubnetV2Delete(ctx context.Context, d *schema.Resource
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return diag.Errorf("Error waiting for openstack_networking_vpcsubnet_v2 %s to become deleted: %s", d.Id(), err)
+		return diag.Errorf("Error waiting for nhncloud_networking_vpcsubnet_v2 %s to become deleted: %s", d.Id(), err)
 	}
 
 	return nil

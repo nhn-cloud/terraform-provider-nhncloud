@@ -3,8 +3,8 @@ package nhncloud
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/nhn/terraform-provider-nhncloud/nhncloud/internal/pathorcontents"
@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/utils/terraform/auth"
 	"github.com/gophercloud/utils/terraform/mutexkv"
 )
 
 var (
-	osBranch                     = os.Getenv("OS_BRANCH")
 	osDBEnvironment              = os.Getenv("OS_DB_ENVIRONMENT")
 	osDBDatastoreVersion         = os.Getenv("OS_DB_DATASTORE_VERSION")
 	osDBDatastoreType            = os.Getenv("OS_DB_DATASTORE_TYPE")
@@ -262,29 +262,54 @@ func testAccPreCheckHypervisor(t *testing.T) {
 	}
 }
 
-// SkipReleasesBelow will have the test be skipped on releases below a certain
+// testAccSkipReleasesBelow will have the test be skipped on releases below a certain
 // one. Releases are named such as 'stable/mitaka', master, etc.
 func testAccSkipReleasesBelow(t *testing.T, release string) {
-	testAccPreCheckRequiredEnvVars(t)
+	currentBranch := os.Getenv("OS_BRANCH")
 
 	if IsReleasesBelow(t, release) {
-		t.Skipf("this is not supported below %s, testing in %s", release, osBranch)
+		t.Skipf("this is not supported below %s, testing in %s", release, currentBranch)
 	}
 }
 
 // IsReleasesBelow will return true on releases below a certain
 // one. Releases are named such as 'stable/mitaka', master, etc.
 func IsReleasesBelow(t *testing.T, release string) bool {
-	testAccPreCheckRequiredEnvVars(t)
+	currentBranch := os.Getenv("OS_BRANCH")
 
-	if osBranch != "master" && osBranch < release {
+	if currentBranch != "master" && currentBranch < release {
 		return true
 	}
-	t.Logf("Target release %s is above the current branch %s", release, osBranch)
+	t.Logf("Target release %s is above the current branch %s", release, currentBranch)
 	return false
 }
 
-func TestProvider(t *testing.T) {
+// testAccSkipReleasesAbove will have the test be skipped on releases above a certain
+// one. The test is always skipped on master release. Releases are named such
+// as 'stable/mitaka', master, etc.
+func testAccSkipReleasesAbove(t *testing.T, release string) {
+	currentBranch := os.Getenv("OS_BRANCH")
+
+	if IsReleasesAbove(t, release) {
+		t.Skipf("this is not supported above %s, testing in %s", release, currentBranch)
+	}
+}
+
+// IsReleasesAbove will return true on releases above a certain
+// one. The result is always true on master release. Releases are named such
+// as 'stable/mitaka', master, etc.
+func IsReleasesAbove(t *testing.T, release string) bool {
+	currentBranch := os.Getenv("OS_BRANCH")
+
+	// Assume master is always too new
+	if currentBranch == "master" || currentBranch > release {
+		return true
+	}
+	t.Logf("Target release %s is below the current branch %s", release, currentBranch)
+	return false
+}
+
+func TestUnitProvider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -418,7 +443,7 @@ func envVarFile(varName string) (string, error) {
 		return "", err
 	}
 
-	tmpFile, err := ioutil.TempFile("", varName)
+	tmpFile, err := os.CreateTemp("", varName)
 	if err != nil {
 		return "", fmt.Errorf("Error creating temp file: %s", err)
 	}
@@ -444,29 +469,40 @@ func testAccAuthFromEnv() (*Config, error) {
 		tenantName = os.Getenv("OS_PROJECT_NAME")
 	}
 
+	authOpts := &gophercloud.AuthOptions{
+		Scope: &gophercloud.AuthScope{System: testGetenvBool("OS_SYSTEM_SCOPE")},
+	}
+
 	config := Config{
 		auth.Config{
-			CACertFile:        os.Getenv("OS_CACERT"),
-			ClientCertFile:    os.Getenv("OS_CERT"),
-			ClientKeyFile:     os.Getenv("OS_KEY"),
-			Cloud:             os.Getenv("OS_CLOUD"),
-			DefaultDomain:     os.Getenv("OS_DEFAULT_DOMAIN"),
-			DomainID:          os.Getenv("OS_DOMAIN_ID"),
-			DomainName:        os.Getenv("OS_DOMAIN_NAME"),
-			EndpointType:      os.Getenv("OS_ENDPOINT_TYPE"),
-			IdentityEndpoint:  os.Getenv("OS_AUTH_URL"),
-			Password:          os.Getenv("OS_PASSWORD"),
-			ProjectDomainID:   os.Getenv("OS_PROJECT_DOMAIN_ID"),
-			ProjectDomainName: os.Getenv("OS_PROJECT_DOMAIN_NAME"),
-			Region:            os.Getenv("OS_REGION"),
-			Token:             os.Getenv("OS_TOKEN"),
-			TenantID:          tenantID,
-			TenantName:        tenantName,
-			UserDomainID:      os.Getenv("OS_USER_DOMAIN_ID"),
-			UserDomainName:    os.Getenv("OS_USER_DOMAIN_NAME"),
-			Username:          os.Getenv("OS_USERNAME"),
-			UserID:            os.Getenv("OS_USER_ID"),
-			MutexKV:           mutexkv.NewMutexKV(),
+			CACertFile:                  os.Getenv("OS_CACERT"),
+			ClientCertFile:              os.Getenv("OS_CERT"),
+			ClientKeyFile:               os.Getenv("OS_KEY"),
+			Cloud:                       os.Getenv("OS_CLOUD"),
+			DefaultDomain:               os.Getenv("OS_DEFAULT_DOMAIN"),
+			DomainID:                    os.Getenv("OS_DOMAIN_ID"),
+			DomainName:                  os.Getenv("OS_DOMAIN_NAME"),
+			EndpointType:                os.Getenv("OS_ENDPOINT_TYPE"),
+			IdentityEndpoint:            os.Getenv("OS_AUTH_URL"),
+			Password:                    os.Getenv("OS_PASSWORD"),
+			ProjectDomainID:             os.Getenv("OS_PROJECT_DOMAIN_ID"),
+			ProjectDomainName:           os.Getenv("OS_PROJECT_DOMAIN_NAME"),
+			Region:                      os.Getenv("OS_REGION"),
+			Token:                       os.Getenv("OS_TOKEN"),
+			TenantID:                    tenantID,
+			TenantName:                  tenantName,
+			UserDomainID:                os.Getenv("OS_USER_DOMAIN_ID"),
+			UserDomainName:              os.Getenv("OS_USER_DOMAIN_NAME"),
+			Username:                    os.Getenv("OS_USERNAME"),
+			UserID:                      os.Getenv("OS_USER_ID"),
+			ApplicationCredentialID:     os.Getenv("OS_APPLICATION_CREDENTIAL_ID"),
+			ApplicationCredentialName:   os.Getenv("OS_APPLICATION_CREDENTIAL_NAME"),
+			ApplicationCredentialSecret: os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET"),
+			UseOctavia:                  testGetenvBool("OS_USE_OCTAVIA"),
+			DelayedAuth:                 testGetenvBool("OS_DELAYED_AUTH"),
+			AllowReauth:                 testGetenvBool("OS_ALLOW_REAUTH"),
+			AuthOpts:                    authOpts,
+			MutexKV:                     mutexkv.NewMutexKV(),
 		},
 	}
 
@@ -475,4 +511,9 @@ func testAccAuthFromEnv() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func testGetenvBool(env string) bool {
+	ret, _ := strconv.ParseBool(os.Getenv(env))
+	return ret
 }
