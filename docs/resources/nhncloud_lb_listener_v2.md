@@ -41,20 +41,20 @@ resource "nhncloud_lb_listener_v2" "tf_listener_01"{
 
 ## Argument Reference
 
-* `name` - (Optional) Name of listener to create.
-* `description` - (Optional) Description of listener.
-* `protocol` - (Required) Protocol of listener to create <br>One among `TCP`, `HTTP,HTTPS`, and `TERMINATED_HTTPS`.
-* `protocol_port` - (Required) Port of listener to create.
-* `loadbalancer_id` - (Required) ID of load balancer to be connected with listener to create.
-* `default_pool_id` - (Optional) ID of the default pool to be connected with listener to create.
-* `connection_limit` - (Optional) Maximum connection count allowed for listener to create.
-* `timeout_client_data` - (Optional) Timeout setting when client is inactive (ms).
-* `timeout_member_connect` - (Optional) Timeout setting when member is connected (ms).
-* `timeout_member_data` - (Optional) Timeout setting when member is inactive (ms).
-* `timeout_tcp_inspect` - (Optional) Timeout to wait for additional TCP packets for content inspection (ms).
-* `default_tls_container_ref` - (Optional) Path of TLC certificate to be used when the protocol is `TERMINATED_HTTPS`.
-* `sni_container_refs` - (Optional) List of SNI certificate paths.
-* `insert_headers` - (Optional) List of headers to be added before request is sent to a backend member.
+* `name` - (Optional) The name of the listener to create.
+* `description` - (Optional) The description of the listener.
+* `protocol` - (Required) The protocol of the listener to create <br>One among `TCP`, `HTTP`, `HTTPS`, and `TERMINATED_HTTPS`.
+* `protocol_port` - (Required) The port of the listener to create.
+* `loadbalancer_id` - (Required) The ID of the load balancer to be connected with the listener to create.
+* `default_pool_id` - (Optional) The ID of the default pool to be connected with the listener to create.
+* `connection_limit` - (Optional) The maximum connection count allowed for the listener to create.
+* `timeout_client_data` - (Optional) The timeout setting when the client is inactive (ms).
+* `timeout_member_connect` - (Optional) The timeout setting when the member is connected (ms).
+* `timeout_member_data` - (Optional) The timeout setting when the member is inactive (ms).
+* `timeout_tcp_inspect` - (Optional) The timeout to wait for additional TCP packets for content inspection (ms).
+* `default_tls_container_ref` - (Optional) The path of TLC certificate to be used when the protocol is `TERMINATED_HTTPS`.
+* `sni_container_refs` - (Optional) The list of SNI certificate paths.
+* `insert_headers` - (Optional) The list of headers to be added before a request is sent to a backend member.
 * `admin_state_up` - (Optional) Administrator control status.
 
 

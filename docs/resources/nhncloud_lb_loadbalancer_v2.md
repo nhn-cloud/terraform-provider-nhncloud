@@ -14,12 +14,12 @@ resource "nhncloud_lb_loadbalancer_v2" "tf_loadbalancer_01"{
 
 ## Argument Reference
 
-* `name` - (Optional) Name of load balancer.
-* `description` - (Optional) Description of load balancer.
-* `tenant_id` - (Optional) Tenant ID to which load balancer is to be created.
-* `vip_subnet_id` - (Required) Subnet UUID to be used by load balancer.
-* `vip_address` - (Optional) IP address of load balancer.
-* `security_group_ids` - (Optional) List of security group IDs to be applied for load balancer <br>**Security groups must be specified by ID, not by name**.
+* `name` - (Optional) The name of the load balancer.
+* `description` - (Optional) The description of the load balancer.
+* `tenant_id` - (Optional) The tenant ID for which the load balancer is to be created.
+* `vip_subnet_id` - (Required) The subnet UUID to be used by the load balancer.
+* `vip_address` - (Optional) The IP address of the load balancer.
+* `security_group_ids` - (Optional) The list of security group IDs to be applied for the load balancer.<br>**Security groups must be specified by ID, not by name**.
 * `admin_state_up` - (Optional) Administrator control status.
 
 ## Attribute Reference

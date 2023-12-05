@@ -22,11 +22,11 @@ resource "nhncloud_lb_pool_v2" "tf_pool_01"{
 * `name`  - (Optional) Load balancer name.
 * `description`  - (Optional) Pool description.
 * `protocol` - (Required) Protocol <br>One among `TCP`, `HTTP`, `HTTPS`, and `PROXY`.
-* `listener_id` - (Required) ID of listener with which a pool to create is associated.
-* `lb_method` - (Required) Load balancing method to distribute pool traffic to members <br>One among `ROUND_ROBIN`,`LEAST_CONNECTIONS`, and `SOURCE_IP`.
-* `persistence` - (Optional) Session persistence of a pool to create.
+* `listener_id` - (Required) The ID of the listener with which a pool to create is associated.
+* `lb_method` - (Required) The load balancing method to distribute pool traffic to members <br>One among `ROUND_ROBIN`,`LEAST_CONNECTIONS`, and `SOURCE_IP`.
+* `persistence` - (Optional) Session persistence of the pool to create.
 * `persistence.type` - (Required) Session persistence type<br>One among `SOURCE_IP`, `HTTP_COOKIE`, and `APP_COOKIE` <br>Unavailable if the load balancing method is `SOURCE_IP`<br>HTTP_COOKIE and APP_COOKIE are unavailable if the protocol is `HTTPS` or `TCP`.
-* `persistence.cookie_name` - (Optional) Name of cookie <br>persistence.cookie_name is available only when the session persistence type is APP_COOKIE.
+* `persistence.cookie_name` - (Optional) The name of cookie <br>persistence.cookie_name is available only when the session persistence type is APP_COOKIE.
 * `admin_state_up` - (Optional) Administrator control status.
 
 ## Attribute Reference

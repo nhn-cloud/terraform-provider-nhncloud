@@ -11,10 +11,10 @@ data "nhncloud_blockstorage_volume_v2" "volume_00" {
 
 ## Argument Reference
 
-* `region` - (Optional) Region name that block storage to query belongs to.
-* `name` - (Optional) Name of block storage to query.
-* `status` - (Optional) Status of block storage to query.
-* `metadata` - (Optional) Metadata related to block storage to query.
+* `region` - (Optional) The region name in which the block storage to query exists.
+* `name` - (Optional) The name of the block storage to query.
+* `status` - (Optional) The status of the block storage to query.
+* `metadata` - (Optional) The metadata related to the block storage to query.
 
 ## Attribute Reference
 
@@ -27,4 +27,4 @@ are exported:
 * `metadata` - See Argument Reference above.
 * `volume_type` - The type of the volume.
 * `bootable` - Indicates if the volume is bootable.
-* `size` - The size of the volume in GBs.
+* `size` - The size of the volume in GB.

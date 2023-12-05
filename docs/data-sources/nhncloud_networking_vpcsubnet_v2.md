@@ -14,15 +14,14 @@ data "nhncloud_networking_vpcsubnet_v2" "default_subnet" {
 
 ## Argument Reference
 
-* `region` - (Optional) Region name that subnet to query belongs to.
-* `tenant_id` - (Optional) Tenant ID that subnet to query belongs to.
-* `id` - (Optional) Subnet ID to query.
-* `name` - (Optional) Subnet name to query.
-* `shared` - (Optional) Whether to share subnet to query.
+* `region` - (Optional) The region name in which the subnet to query exists.
+* `tenant_id` - (Optional) The tenant ID to which the subnet to query belongs.
+* `id` - (Optional) The subnet ID to query.
+* `name` - (Optional) The subnet name to query.
+* `shared` - (Optional) Whether to share the subnet to query.
 
 ## Attribute Reference
 
-`id` is set to the ID of the found subnet. In addition, the following attributes
-are exported:
+`id` is set to the ID of the found subnet. In addition, the following attributes are exported:
 
 * `region` - See Argument Reference above.

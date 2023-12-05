@@ -13,15 +13,14 @@ data "nhncloud_networking_vpc_v2" "default_network" {
 
 ## Argument Reference
 
-* `region` - (Optional) Region name that VPC to query belongs to.
-* `tenant_id` - (Optional) Tenant ID that VPC to query belongs to.
-* `id` - (Optional) VPC ID to query.
-* `name` - (Optional) VPC name to query.
+* `region` - (Optional) The region name in which the VPC to query exists.
+* `tenant_id` - (Optional) The tenant ID to which the VPC to query belongs.
+* `id` - (Optional) The VPC ID to query.
+* `name` - (Optional) The VPC name to query.
 
 ## Attribute Reference
 
-`id` is set to the ID of the found network. In addition, the following attributes
-are exported:
+`id` is set to the ID of the found network. In addition, the following attributes are exported:
 
 * `name` - See Argument Reference above.
 * `region` - See Argument Reference above.

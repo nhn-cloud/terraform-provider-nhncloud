@@ -13,13 +13,13 @@ data "nhncloud_blockstorage_snapshot_v2" "my_snapshot" {
 
 ## Argument Reference
 
-* `region` - (Optional) Region name that snapshot to query belongs to.
-* `name` - (Optional) Name of snapshot to query.
-* `volume_id` - (Optional) ID of original block storage of snapshot to query.
-* `status` - (Optional) Status of snapshot to query.
+* `region` - (Optional) The region name in which the snapshot to query exists.
+* `name` - (Optional) The name of the snapshot to query.
+* `volume_id` - (Optional) The ID of original block storage of the snapshot to query.
+* `status` - (Optional) The status of the snapshot to query.
 * `most_recent` - (Optional) 
   * `true`: Select the most recently created snapshot from the queried snapshot list.
-  * `false`: Select snapshots in the queried order.
+  * `false`: Select snapshots in the order they were queried.
 
 ## Attribute Reference
 
@@ -30,4 +30,4 @@ The following attributes are exported:
 * `status` - See Argument Reference above.
 * `volume_id` - See Argument Reference above.
 * `size` - The size of the snapshot.
-* `metadata` - The snapshot's metadata.
+* `metadata` - The metadata for the snapshot.

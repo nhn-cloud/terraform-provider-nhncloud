@@ -11,10 +11,10 @@ resource "nhncloud_networking_vpc_v2" "resource-vpc-01" {
 
 ## Argument Reference
 
-* `name` - (Required) VPC name.
-* `cidrv4` - (Required) VPC IP range.
-* `region` - (Optional) VPC region name.
-* `tenant_id` - (Optional) VPC tenant ID.
+* `name` - (Required) The name for the VPC.
+* `cidrv4` - (Required) The IP range for the VPC.
+* `region` - (Optional) The region name of the VPC.
+* `tenant_id` - (Optional) The tenant ID of the VPC.
 
 ## Attribute Reference
 

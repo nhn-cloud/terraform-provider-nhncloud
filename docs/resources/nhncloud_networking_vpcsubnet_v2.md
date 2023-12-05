@@ -13,12 +13,12 @@ resource "nhncloud_networking_vpcsubnet_v2" "resource-vpcsubnet-01" {
 
 ## Argument Reference
 
-* `vpc_id` - (Requried) VPC ID to which subnet is assigned.
-* `cidr` - (Requried) IP range of subnet.
-* `name` - (Requried) Name of subnet.
-* `region` - (Optional) Name of region to which subnet is assigned.
-* `tenant_id` - (Optional) Tenant ID to which subnet is assigned.
-* `routingtable_id` - (Optional) Routing table ID.
+* `vpc_id` - (Requried) The VPC ID to which the subnet is assigned.
+* `cidr` - (Requried) The IP range of the subnet.
+* `name` - (Requried) The name of the subnet.
+* `region` - (Optional) The region name to which the subnet is assigned.
+* `tenant_id` - (Optional) The tenant ID to which the subnet is assigned.
+* `routingtable_id` - (Optional) The Routing table ID.
 
 ## Attribute Reference
 
