@@ -12,6 +12,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
 	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcs"
 )
 
@@ -136,4 +137,10 @@ type EndpointGroupCreateOpts struct {
 type SiteConnectionCreateOpts struct {
 	siteconnections.CreateOpts
 	ValueSpecs map[string]string `json:"value_specs,omitempty"`
+}
+
+// RoutingtableCreateOpts represents the attributes used when creating a new routing table.
+type RoutingtableCreateOpts struct {
+	routingtables.CreateOpts
+	//ValueSpecs map[string]string `json:"value_specs,omitempty"`
 }
