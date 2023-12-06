@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/gophercloud/gophercloud"
-	volumesV2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	volumesV3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
@@ -33,6 +32,7 @@ import (
 	flavorsutils "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imagesutils "github.com/gophercloud/utils/openstack/imageservice/v2/images"
 	"github.com/gophercloud/utils/terraform/hashcode"
+	volumesV2 "github.com/nhn/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 	"github.com/nhn/nhncloud.gophercloud/nhncloud/compute/v2/extensions/bootfromvolume"
 )
 
@@ -290,7 +290,7 @@ func resourceComputeInstanceV2() *schema.Resource {
 							ForceNew: true,
 						},
 						"nhn_encryption": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							ForceNew: true,
 							Elem: &schema.Resource{
@@ -1381,11 +1381,11 @@ func resourceInstanceBlockDevicesV2(d *schema.ResourceData, bds []interface{}) (
 		}
 
 		if e, ok := d.GetOk("nhn_encryption"); ok {
-			ne := (e.([]interface{}))[0].(map[string]interface{})
+			enc := (e.([]interface{}))[0].(map[string]interface{})
 
 			nhnEncryption := bootfromvolume.NhnEncryption{
-				SkmAppkey: ne["skm_appkey"].(string),
-				SkmKeyID:  ne["skm_key_id"].(string),
+				SkmAppkey: enc["skm_appkey"].(string),
+				SkmKeyID:  enc["skm_key_id"].(string),
 			}
 
 			blockDeviceOpts[i].NhnEncryption = &nhnEncryption

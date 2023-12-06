@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"github.com/nhn/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 )
 
 func TestAccBlockStorageV2VolumeDataSource_basic(t *testing.T) {
