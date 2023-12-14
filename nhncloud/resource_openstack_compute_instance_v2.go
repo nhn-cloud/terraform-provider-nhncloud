@@ -1365,7 +1365,7 @@ func resourceInstanceMetadataV2(d *schema.ResourceData) map[string]string {
 	return m
 }
 
-func resourceInstanceBlockDevicesV2(d *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
+func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) ([]bootfromvolume.BlockDevice, error) {
 	blockDeviceOpts := make([]bootfromvolume.BlockDevice, len(bds))
 	for i, bd := range bds {
 		bdM := bd.(map[string]interface{})
@@ -1380,7 +1380,7 @@ func resourceInstanceBlockDevicesV2(d *schema.ResourceData, bds []interface{}) (
 			DiskBus:             bdM["disk_bus"].(string),
 		}
 
-		if e, ok := d.GetOk("nhn_encryption"); ok {
+		if e, ok := bdM["nhn_encryption"]; ok {
 			enc := (e.([]interface{}))[0].(map[string]interface{})
 
 			nhnEncryption := bootfromvolume.NhnEncryption{
