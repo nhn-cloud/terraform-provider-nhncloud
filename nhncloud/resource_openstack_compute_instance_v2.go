@@ -1381,14 +1381,16 @@ func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) (
 		}
 
 		if e, ok := bdM["nhn_encryption"]; ok {
-			enc := (e.([]interface{}))[0].(map[string]interface{})
+			if len(e.([]interface{})) > 0 {
+				enc := (e.([]interface{}))[0].(map[string]interface{})
 
-			nhnEncryption := bootfromvolume.NhnEncryption{
-				SkmAppkey: enc["skm_appkey"].(string),
-				SkmKeyID:  enc["skm_key_id"].(string),
+				nhnEncryption := bootfromvolume.NhnEncryption{
+					SkmAppkey: enc["skm_appkey"].(string),
+					SkmKeyID:  enc["skm_key_id"].(string),
+				}
+
+				blockDeviceOpts[i].NhnEncryption = &nhnEncryption
 			}
-
-			blockDeviceOpts[i].NhnEncryption = &nhnEncryption
 		}
 
 		sourceType := bdM["source_type"].(string)
