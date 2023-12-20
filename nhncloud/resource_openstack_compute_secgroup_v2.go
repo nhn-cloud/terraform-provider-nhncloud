@@ -110,7 +110,7 @@ func resourceComputeSecGroupV2Create(ctx context.Context, d *schema.ResourceData
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	// Before creating the security group, make sure all rules are valid.
@@ -125,10 +125,10 @@ func resourceComputeSecGroupV2Create(ctx context.Context, d *schema.ResourceData
 		Description: d.Get("description").(string),
 	}
 
-	log.Printf("[DEBUG] openstack_compute_secgroup_v2 Create Options: %#v", createOpts)
+	log.Printf("[DEBUG] nhncloud_compute_secgroup_v2 Create Options: %#v", createOpts)
 	sg, err := secgroups.Create(computeClient, createOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Error creating openstack_compute_secgroup_v2 %s: %s", name, err)
+		return diag.Errorf("Error creating nhncloud_compute_secgroup_v2 %s: %s", name, err)
 	}
 
 	d.SetId(sg.ID)
@@ -139,7 +139,7 @@ func resourceComputeSecGroupV2Create(ctx context.Context, d *schema.ResourceData
 	for _, createRuleOpts := range createRuleOptsList {
 		_, err := secgroups.CreateRule(computeClient, createRuleOpts).Extract()
 		if err != nil {
-			return diag.Errorf("Error creating openstack_compute_secgroup_v2 %s rule: %s", name, err)
+			return diag.Errorf("Error creating nhncloud_compute_secgroup_v2 %s rule: %s", name, err)
 		}
 	}
 
@@ -150,12 +150,12 @@ func resourceComputeSecGroupV2Read(_ context.Context, d *schema.ResourceData, me
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	sg, err := secgroups.Get(computeClient, d.Id()).Extract()
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error retrieving openstack_compute_secgroup_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error retrieving nhncloud_compute_secgroup_v2"))
 	}
 
 	d.Set("name", sg.Name)
@@ -166,10 +166,10 @@ func resourceComputeSecGroupV2Read(_ context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] Retrieved openstack_compute_secgroup_v2 %s rules: %#v", d.Id(), rules)
+	log.Printf("[DEBUG] Retrieved nhncloud_compute_secgroup_v2 %s rules: %#v", d.Id(), rules)
 
 	if err := d.Set("rule", rules); err != nil {
-		return diag.Errorf("Unable to set openstack_compute_secgroup_v2 %s rules: %s", d.Id(), err)
+		return diag.Errorf("Unable to set nhncloud_compute_secgroup_v2 %s rules: %s", d.Id(), err)
 	}
 
 	d.Set("region", GetRegion(d, config))
@@ -181,7 +181,7 @@ func resourceComputeSecGroupV2Update(ctx context.Context, d *schema.ResourceData
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	description := d.Get("description").(string)
@@ -190,11 +190,11 @@ func resourceComputeSecGroupV2Update(ctx context.Context, d *schema.ResourceData
 		Description: &description,
 	}
 
-	log.Printf("[DEBUG] openstack_compute_secgroup_v2 %s Update Options: %#v", d.Id(), updateOpts)
+	log.Printf("[DEBUG] nhncloud_compute_secgroup_v2 %s Update Options: %#v", d.Id(), updateOpts)
 
 	_, err = secgroups.Update(computeClient, d.Id(), updateOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Error updating openstack_compute_secgroup_v2 %s: %s", d.Id(), err)
+		return diag.Errorf("Error updating nhncloud_compute_secgroup_v2 %s: %s", d.Id(), err)
 	}
 
 	if d.HasChange("rule") {
@@ -203,15 +203,15 @@ func resourceComputeSecGroupV2Update(ctx context.Context, d *schema.ResourceData
 		secgrouprulesToAdd := newSGRSet.Difference(oldSGRSet)
 		secgrouprulesToRemove := oldSGRSet.Difference(newSGRSet)
 
-		log.Printf("[DEBUG] openstack_compute_secgroup_v2 %s rules to add: %v", d.Id(), secgrouprulesToAdd)
-		log.Printf("[DEBUG] openstack_compute_secgroup_v2 %s rules to remove: %v", d.Id(), secgrouprulesToRemove)
+		log.Printf("[DEBUG] nhncloud_compute_secgroup_v2 %s rules to add: %v", d.Id(), secgrouprulesToAdd)
+		log.Printf("[DEBUG] nhncloud_compute_secgroup_v2 %s rules to remove: %v", d.Id(), secgrouprulesToRemove)
 
 		for _, rawRule := range secgrouprulesToAdd.List() {
 			createRuleOpts := expandComputeSecGroupV2CreateRule(d, rawRule)
 
 			_, err := secgroups.CreateRule(computeClient, createRuleOpts).Extract()
 			if err != nil {
-				return diag.Errorf("Error adding rule to openstack_compute_secgroup_v2 %s: %s", d.Id(), err)
+				return diag.Errorf("Error adding rule to nhncloud_compute_secgroup_v2 %s: %s", d.Id(), err)
 			}
 		}
 
@@ -224,7 +224,7 @@ func resourceComputeSecGroupV2Update(ctx context.Context, d *schema.ResourceData
 					continue
 				}
 
-				return diag.Errorf("Error removing rule %s from openstack_compute_secgroup_v2 %s: %s", rule.ID, d.Id(), err)
+				return diag.Errorf("Error removing rule %s from nhncloud_compute_secgroup_v2 %s: %s", rule.ID, d.Id(), err)
 			}
 		}
 	}
@@ -236,7 +236,7 @@ func resourceComputeSecGroupV2Delete(ctx context.Context, d *schema.ResourceData
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -250,7 +250,7 @@ func resourceComputeSecGroupV2Delete(ctx context.Context, d *schema.ResourceData
 
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error deleting openstack_compute_secgroup_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_compute_secgroup_v2"))
 	}
 
 	return nil
