@@ -32,15 +32,20 @@ resource "nhncloud_blockstorage_volume_v2" "volume_03" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region of the block storage to create<br>The default is the region configured in the provider.
+* `region` - (Optional) The region of the block storage to create.<br>The default is the region configured in the provider.
 * `name` - (Optional) The name of the block storage to create.
 * `description` - (Optional) The description of the block storage.
 * `size` - (Required) The size of the block storage to create (GB).
 * `snapshot_id` - (Optional) The snapshot ID from which to create the block storage.
 * `availability_zone` - (Optional) The availability zone of the block storage to create. If the value does not exist, random availability zone is used. <br>To check availability_zone, go to `Storage > Block Storage > Management` on the console and click **Create Block Storage**.
 * `volume_type` - (Optional) The type of the block storage. 
-  * `General HDD`: HDD block storage (default). 
-  * `General SSD`: SSD block storage.
+  <br> `General HDD`: HDD block storage (default). 
+  <br>`General SSD`: SSD block storage.
+  <br>`Encrypted HDD`: HDD encrypted block storage.
+  <br>`Encrypted SSD`: SSD encrypted block storage.
+* `nhn_encryption` - (Optional) About block storage encryption.
+* `nhn_encryption.skm_appkey` - (Required) The appKeys for Secure Key Manager products.
+* `nhn_encryption.skm_key_id` - (Required) The key ID in Secure Key Manager.
 
 ## Attribute Reference
 
