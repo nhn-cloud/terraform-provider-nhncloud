@@ -318,6 +318,7 @@ func Provider() *schema.Provider {
 			"nhncloud_keymanager_secret_v1":                     dataSourceKeyManagerSecretV1(),
 			"nhncloud_keymanager_container_v1":                  dataSourceKeyManagerContainerV1(),
 			"nhncloud_networking_routingtable_v2":               dataSourceNetworkingRoutingtableV2(),
+
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -425,6 +426,7 @@ func Provider() *schema.Provider {
 			"nhncloud_keymanager_container_v1":                  resourceKeyManagerContainerV1(),
 			"nhncloud_keymanager_order_v1":                      resourceKeyManagerOrderV1(),
 			"nhncloud_networking_routingtable_v2":               resourceNetworkingRoutingtableV2(),
+
 		},
 	}
 
