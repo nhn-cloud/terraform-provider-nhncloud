@@ -41,9 +41,9 @@ The following arguments are supported:
 * `volume_type` - (Optional) The type of the block storage. 
   <br> `General HDD`: HDD block storage (default). 
   <br>`General SSD`: SSD block storage.
-  <br>`Encrypted HDD`: HDD encrypted block storage.
-  <br>`Encrypted SSD`: SSD encrypted block storage.
-* `nhn_encryption` - (Optional) About block storage encryption.
+  <br>`Encrypted HDD`: Encrypted HDD block storage.
+  <br>`Encrypted SSD`: Encrypted SSD block storage.
+* `nhn_encryption` - (Optional) Block storage encryption.
 * `nhn_encryption.skm_appkey` - (Required) The appKeys for Secure Key Manager products.
 * `nhn_encryption.skm_key_id` - (Required) The key ID in Secure Key Manager.
 

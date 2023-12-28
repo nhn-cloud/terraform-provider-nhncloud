@@ -10,7 +10,7 @@ data "nhncloud_keymanager_secret_v1" "secret_01" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region name that secret to query belongs to.
+* `region` - (Optional) The region name to which the secret to query belongs.
 * `name` - (Optional) The secret name to query.
 
 ## Attribute Reference

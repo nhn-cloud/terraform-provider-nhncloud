@@ -10,8 +10,8 @@ resource "nhncloud_networking_secgroup_v2" "resource-sg-01" {
 
 ## Argument Reference
 
-* `name` - (Required) The security group name.
-* `region` - (Optional) Name of region to which security group is assigned.
+* `name` - (Required) The name of the security group.
+* `region` - (Optional) The region name to which the security group is assigned.
 
 ## Attribute Reference
 

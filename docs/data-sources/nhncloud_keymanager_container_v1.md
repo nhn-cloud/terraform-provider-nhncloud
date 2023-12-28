@@ -10,7 +10,7 @@ data "nhncloud_keymanager_container_v1" "container_01" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region name to which the secret container you want to look up belongs.
+* `region` - (Optional) The region name to which the secret container to query belongs.
 * `name` - (Optional) The secret container name to query.
 
 ## Attribute Reference

@@ -10,8 +10,8 @@ data "nhncloud_networking_secgroup_v2" "default_sg" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region name that security group to query belongs to.
-* `tenant_id` - (Optional) The tenant ID that security group to query belongs to.
+* `region` - (Optional) The region name to which the security group to query belongs.
+* `tenant_id` - (Optional) The tenant ID to which the security group to query belongs.
 * `name` - (Optional) The security group name to query.
 
 ## Attribute Reference

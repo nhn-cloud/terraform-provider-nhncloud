@@ -91,7 +91,7 @@ resource "nhncloud_compute_instance_v2" "tf_instance_02" {
 * `block_device.boot_index` - (Optional) The order to boot the specified block storage<br>- If so, root block storage<br>- If not, additional block storage<br>The higher the number, the lower the booting priority.
 * `block_device.volume_size` - (Optional) The block storage size for the instance to create<br>Available from 20 GB to 2,000 GB (required if the flavor is U2)<br>Since each flavor allows different volume size, see `User Guide > Compute > Instance Console User Guide`.
 * `block_device.delete_on_termination` - (Optional) `true`: When deleting an instance, delete a block device<br>`false`: When deleting an instance, do not delete a block.
-* `block_device.nhn_encryption` - (Optional) About block storage encryption.
+* `block_device.nhn_encryption` - (Optional) Block storage encryption.
 * `block_device.nhn_encryption.skm_appkey` - (Required) The appKeys for Secure Key Manager products.
 * `block_device.nhn_encryption.skm_key_id` - (Required) The key ID in Secure Key Manager.
 

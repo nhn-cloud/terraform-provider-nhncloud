@@ -10,7 +10,7 @@ data "nhncloud_networking_routingtable_v2" "default_rt" {
 
 ## Argument Reference
 
-* `tenant_id` - (Optional) The tenant ID to which routing table to query is included.
+* `tenant_id` - (Optional) The tenant ID to which the routing table to query belongs.
 * `id` - (Optional) The routing table ID to query.
 * `name` - (Optional) The routing table name to query.
 

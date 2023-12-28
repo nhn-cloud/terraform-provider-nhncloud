@@ -16,9 +16,9 @@ resource "nhncloud_networking_routingtable_v2" "resource-rt-01" {
 
 ## Argument Reference
 
-* `name` - (Required) The name for the routing table.
+* `name` - (Required) The name of the routing table.
 * `vpc_id` - (Optional) The VPC ID of the routing table.
-* `distributed` - (Optional) Routing method of routing table.(default: `true`)
+* `distributed` - (Optional) The routing method for the routing table. (default: `true`)
   * `true`: decentralized
   * `false`: centralized
 
@@ -28,5 +28,5 @@ The following attributes are exported:
 
 * `region` - See Argument Reference above.
 * `name` - See Argument Reference above.
-* `shared` - Whether to share routing table.
+* `shared` - Whether to share the routing table.
 * `tenant_id` - See Argument Reference above.
