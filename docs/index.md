@@ -15,7 +15,7 @@ required_version = ">= 1.0.0"
   required_providers {
     nhncloud = {
       source  = "terraform.local/local/nhncloud"
-      version = "1.0.0"
+      version = "1.0.1"
     }
   }
 }
