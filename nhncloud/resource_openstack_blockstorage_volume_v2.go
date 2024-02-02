@@ -12,7 +12,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 )
 
 func resourceBlockStorageVolumeV2() *schema.Resource {

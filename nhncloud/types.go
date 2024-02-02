@@ -12,8 +12,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcs"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/vpcs"
 )
 
 // FloatingIPCreateOpts represents the attributes used when creating a new floating ip.

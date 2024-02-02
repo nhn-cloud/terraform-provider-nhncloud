@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
 	"log"
 )
 

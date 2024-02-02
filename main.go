@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/nhn/terraform-provider-nhncloud/nhncloud"
+	"github.com/nhn-cloud/terraform-provider-nhncloud/nhncloud"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )

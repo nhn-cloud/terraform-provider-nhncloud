@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 )
 
 func blockStorageVolumeV2VolumeFixture() volumes.Volume {

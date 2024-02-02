@@ -32,8 +32,8 @@ import (
 	flavorsutils "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imagesutils "github.com/gophercloud/utils/openstack/imageservice/v2/images"
 	"github.com/gophercloud/utils/terraform/hashcode"
-	volumesV2 "github.com/nhn/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/compute/v2/extensions/bootfromvolume"
+	volumesV2 "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/compute/v2/extensions/bootfromvolume"
 )
 
 func resourceComputeInstanceV2() *schema.Resource {

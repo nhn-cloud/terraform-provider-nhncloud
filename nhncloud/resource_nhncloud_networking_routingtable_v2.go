@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/routingtables"
 )
 
 func resourceNetworkingRoutingtableV2() *schema.Resource {

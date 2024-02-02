@@ -8,7 +8,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/utils/terraform/hashcode"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 )
 
 func flattenBlockStorageVolumeV2Attachments(v []volumes.Attachment) []map[string]interface{} {

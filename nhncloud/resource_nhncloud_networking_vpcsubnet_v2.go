@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcsubnets"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/vpcsubnets"
 )
 
 func resourceNetworkingVPCSubnetV2() *schema.Resource {
