@@ -18,10 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/gophercloud/gophercloud"
-	volumesV2 "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	volumesV3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
@@ -34,6 +32,8 @@ import (
 	flavorsutils "github.com/gophercloud/utils/openstack/compute/v2/flavors"
 	imagesutils "github.com/gophercloud/utils/openstack/imageservice/v2/images"
 	"github.com/gophercloud/utils/terraform/hashcode"
+	volumesV2 "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/compute/v2/extensions/bootfromvolume"
 )
 
 func resourceComputeInstanceV2() *schema.Resource {
@@ -283,6 +283,28 @@ func resourceComputeInstanceV2() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
+						},
+						"test": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"nhn_encryption": {
+							Type:     schema.TypeList,
+							Optional: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"skm_appkey": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"skm_key_id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -1356,6 +1378,19 @@ func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) (
 			VolumeType:          bdM["volume_type"].(string),
 			DeviceType:          bdM["device_type"].(string),
 			DiskBus:             bdM["disk_bus"].(string),
+		}
+
+		if e, ok := bdM["nhn_encryption"]; ok {
+			if len(e.([]interface{})) > 0 {
+				enc := (e.([]interface{}))[0].(map[string]interface{})
+
+				nhnEncryption := bootfromvolume.NhnEncryption{
+					SkmAppkey: enc["skm_appkey"].(string),
+					SkmKeyID:  enc["skm_key_id"].(string),
+				}
+
+				blockDeviceOpts[i].NhnEncryption = &nhnEncryption
+			}
 		}
 
 		sourceType := bdM["source_type"].(string)

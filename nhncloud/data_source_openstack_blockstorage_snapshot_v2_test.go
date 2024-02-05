@@ -11,7 +11,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/snapshots"
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 )
 
 func TestAccBlockStorageV2SnapshotDataSource_basic(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcsubnets"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/vpcsubnets"
 )
 
 func networkingVPCSubnetV2StateRefreshFunc(client *gophercloud.ServiceClient, subnetID string) resource.StateRefreshFunc {

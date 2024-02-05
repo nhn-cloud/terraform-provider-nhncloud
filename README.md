@@ -14,7 +14,7 @@ Building the Provider
 Clone the repository
 
 ```sh
-$ git clone git@github.com:nhn/terraform-provider-nhncloud.git
+$ git clone git@github.com:nhn-cloud/terraform-provider-nhncloud.git
 ```
 
 Enter the provider directory and build the provider

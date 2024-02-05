@@ -11,8 +11,8 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/blockstorage/extensions/schedulerhints"
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 )
 
 func resourceBlockStorageVolumeV2() *schema.Resource {
@@ -165,6 +165,24 @@ func resourceBlockStorageVolumeV2() *schema.Resource {
 				},
 				Set: blockStorageExtensionsSchedulerHintsHash,
 			},
+
+			"nhn_encryption": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"skm_appkey": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"skm_key_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -189,6 +207,17 @@ func resourceBlockStorageVolumeV2Create(ctx context.Context, d *schema.ResourceD
 		SourceReplica:      d.Get("source_replica").(string),
 		SourceVolID:        d.Get("source_vol_id").(string),
 		VolumeType:         d.Get("volume_type").(string),
+	}
+
+	if e, ok := d.GetOk("nhn_encryption"); ok {
+		enc := (e.([]interface{}))[0].(map[string]interface{})
+
+		nhnEncryption := volumes.NhnEncryption{
+			SkmAppkey: enc["skm_appkey"].(string),
+			SkmKeyID:  enc["skm_key_id"].(string),
+		}
+
+		volumeCreateOpts.NhnEncryption = &nhnEncryption
 	}
 
 	var createOpts schedulerhints.CreateOptsExt

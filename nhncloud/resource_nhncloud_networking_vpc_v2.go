@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/nhn/nhncloud.gophercloud/nhncloud/networking/v2/vpcs"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/vpcs"
 )
 
 func resourceNetworkingVPCV2() *schema.Resource {
