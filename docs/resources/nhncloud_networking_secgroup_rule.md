@@ -26,7 +26,7 @@ The following arguments are supported:
 
 * `security_group_id` - (Required) Security group ID containing the security rule.
 * `direction` - (Required) Direction of packet to which the security rule is applied `ingress`, `egress`.
-* `ethertype` - (Required) Set to `IPv4`. Specified as `IPv4` if omitted.
+* `ethertype` - (Optional) Set to `IPv4`. Specified as `IPv4` if omitted.
 * `protocol` - (Optional) Protocol name of the security rule. Applied to all protocols if omitted.
 * `port_range_min` - (Optional) Minimum port range of the security rule.
 * `port_range_max` - (Optional) Maximum port range of the security rule.
