@@ -49,8 +49,9 @@ func resourceNetworkingSecGroupRuleV2() *schema.Resource {
 
 			"ethertype": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
+				Computed: true,
 			},
 
 			"port_range_min": {
@@ -152,6 +153,8 @@ func resourceNetworkingSecGroupRuleV2Create(ctx context.Context, d *schema.Resou
 			return diag.FromErr(err)
 		}
 		opts.EtherType = ethertype
+	} else {
+		opts.EtherType = rules.EtherType4
 	}
 
 	if v, ok := d.GetOk("protocol"); ok {
