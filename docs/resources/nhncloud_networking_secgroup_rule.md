@@ -24,17 +24,17 @@ data "nhncloud_networking_secgroup_v2" "sg-01" {
 
 The following arguments are supported:
 
-* `security_group_id` - (Required) Security group ID containing the security rule.
-* `direction` - (Required) Direction of packet to which the security rule is applied `ingress`, `egress`.
+* `security_group_id` - (Required) The security group ID to which the security rule belongs.
+* `direction` - (Required) The direction of the packet to which the security rule applies. `ingress` or `egress`.
 * `ethertype` - (Optional) Set to `IPv4`. Specified as `IPv4` if omitted.
-* `protocol` - (Optional) Protocol name of the security rule. Applied to all protocols if omitted.
-* `port_range_min` - (Optional) Minimum port range of the security rule.
-* `port_range_max` - (Optional) Maximum port range of the security rule.
-* `remote_ip_prefix` - (Optional) Destination IP prefix of the security rule.
-* `remote_group_id` - (Optional) Remote security group ID of the security rule.
-* `description` - (Optional) Security rule description.
+* `protocol` - (Optional) The protocol name of the security rule. Applies to all protocols if omitted.
+* `port_range_min` - (Optional) The minimum port range of the security rule.
+* `port_range_max` - (Optional) The maximum port range of the security rule.
+* `remote_ip_prefix` - (Optional) The destination IP prefix of the security rule.
+* `remote_group_id` - (Optional) The remote security group ID to which the security rule belongs.
+* `description` - (Optional) The description for the security rule.
 
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
