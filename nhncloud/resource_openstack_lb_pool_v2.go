@@ -134,22 +134,24 @@ func resourcePoolV2Create(ctx context.Context, d *schema.ResourceData, meta inte
 	listenerID := d.Get("listener_id").(string)
 	var persistence pools.SessionPersistence
 	if p, ok := d.GetOk("persistence"); ok {
-		pV := (p.([]interface{}))[0].(map[string]interface{})
+		if p.([]interface{})[0] != nil {
+			pV := (p.([]interface{}))[0].(map[string]interface{})
 
-		persistence = pools.SessionPersistence{
-			Type: pV["type"].(string),
-		}
-
-		if persistence.Type == "APP_COOKIE" {
-			if pV["cookie_name"].(string) == "" {
-				return diag.Errorf(
-					"Persistence cookie_name needs to be set if using 'APP_COOKIE' persistence type")
+			persistence = pools.SessionPersistence{
+				Type: pV["type"].(string),
 			}
-			persistence.CookieName = pV["cookie_name"].(string)
-		} else {
-			if pV["cookie_name"].(string) != "" {
-				return diag.Errorf(
-					"Persistence cookie_name can only be set if using 'APP_COOKIE' persistence type")
+
+			if persistence.Type == "APP_COOKIE" {
+				if pV["cookie_name"].(string) == "" {
+					return diag.Errorf(
+						"Persistence cookie_name needs to be set if using 'APP_COOKIE' persistence type")
+				}
+				persistence.CookieName = pV["cookie_name"].(string)
+			} else {
+				if pV["cookie_name"].(string) != "" {
+					return diag.Errorf(
+						"Persistence cookie_name can only be set if using 'APP_COOKIE' persistence type")
+				}
 			}
 		}
 	}

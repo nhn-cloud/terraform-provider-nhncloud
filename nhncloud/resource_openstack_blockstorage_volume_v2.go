@@ -210,14 +210,16 @@ func resourceBlockStorageVolumeV2Create(ctx context.Context, d *schema.ResourceD
 	}
 
 	if e, ok := d.GetOk("nhn_encryption"); ok {
-		enc := (e.([]interface{}))[0].(map[string]interface{})
+		if e.([]interface{})[0] != nil {
+			enc := (e.([]interface{}))[0].(map[string]interface{})
 
-		nhnEncryption := volumes.NhnEncryption{
-			SkmAppkey: enc["skm_appkey"].(string),
-			SkmKeyID:  enc["skm_key_id"].(string),
+			nhnEncryption := volumes.NhnEncryption{
+				SkmAppkey: enc["skm_appkey"].(string),
+				SkmKeyID:  enc["skm_key_id"].(string),
+			}
+
+			volumeCreateOpts.NhnEncryption = &nhnEncryption
 		}
-
-		volumeCreateOpts.NhnEncryption = &nhnEncryption
 	}
 
 	var createOpts schedulerhints.CreateOptsExt
