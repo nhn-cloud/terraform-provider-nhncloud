@@ -1381,7 +1381,7 @@ func resourceInstanceBlockDevicesV2(_ *schema.ResourceData, bds []interface{}) (
 		}
 
 		if e, ok := bdM["nhn_encryption"]; ok {
-			if len(e.([]interface{})) > 0 {
+			if e.([]interface{})[0] != nil {
 				enc := (e.([]interface{}))[0].(map[string]interface{})
 
 				nhnEncryption := bootfromvolume.NhnEncryption{
