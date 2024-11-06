@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/listeners"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/pools"
 )
 
 func resourcePoolV2() *schema.Resource {
@@ -118,6 +118,20 @@ func resourcePoolV2() *schema.Resource {
 				Default:  true,
 				Optional: true,
 			},
+
+			"healthmonitor_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
+			"member_port": {
+				Type:         schema.TypeInt,
+				Default:      -1,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IntBetween(-1, 65535),
+			},
 		},
 	}
 }
@@ -126,7 +140,7 @@ func resourcePoolV2Create(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	adminStateUp := d.Get("admin_state_up").(bool)
@@ -165,6 +179,7 @@ func resourcePoolV2Create(ctx context.Context, d *schema.ResourceData, meta inte
 		ListenerID:     listenerID,
 		LBMethod:       pools.LBMethod(d.Get("lb_method").(string)),
 		AdminStateUp:   &adminStateUp,
+		MemberPort:     d.Get("member_port").(int),
 	}
 
 	// Must omit if not set
@@ -180,19 +195,19 @@ func resourcePoolV2Create(ctx context.Context, d *schema.ResourceData, meta inte
 	if listenerID != "" {
 		listener, err := listeners.Get(lbClient, listenerID).Extract()
 		if err != nil {
-			return diag.Errorf("Unable to get openstack_lb_listener_v2 %s: %s", listenerID, err)
+			return diag.Errorf("Unable to get nhncloud_lb_listener_v2 %s: %s", listenerID, err)
 		}
 
 		waitErr := waitForLBV2Listener(ctx, lbClient, listener, "ACTIVE", getLbPendingStatuses(), timeout)
 		if waitErr != nil {
 			return diag.Errorf(
-				"Error waiting for openstack_lb_listener_v2 %s to become active: %s", listenerID, err)
+				"Error waiting for nhncloud_lb_listener_v2 %s to become active: %s", listenerID, err)
 		}
 	} else {
 		waitErr := waitForLBV2LoadBalancer(ctx, lbClient, lbID, "ACTIVE", getLbPendingStatuses(), timeout)
 		if waitErr != nil {
 			return diag.Errorf(
-				"Error waiting for openstack_lb_loadbalancer_v2 %s to become active: %s", lbID, err)
+				"Error waiting for nhncloud_lb_loadbalancer_v2 %s to become active: %s", lbID, err)
 		}
 	}
 
@@ -226,7 +241,7 @@ func resourcePoolV2Read(ctx context.Context, d *schema.ResourceData, meta interf
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	pool, err := pools.Get(lbClient, d.Id()).Extract()
@@ -252,7 +267,7 @@ func resourcePoolV2Update(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	var updateOpts pools.UpdateOpts
@@ -312,7 +327,7 @@ func resourcePoolV2Delete(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)
@@ -349,7 +364,7 @@ func resourcePoolV2Import(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return nil, fmt.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	pool, err := pools.Get(lbClient, d.Id()).Extract()

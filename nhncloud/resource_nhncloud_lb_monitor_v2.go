@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	octaviamonitors "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	neutronmonitors "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	octaviamonitors "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/monitors"
+	neutronmonitors "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/monitors"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/pools"
 )
 
 func resourceMonitorV2() *schema.Resource {
@@ -112,6 +112,18 @@ func resourceMonitorV2() *schema.Resource {
 				Default:  true,
 				Optional: true,
 			},
+
+			"host_header": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+
+			"health_check_port": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -120,7 +132,7 @@ func resourceMonitorV2Create(ctx context.Context, d *schema.ResourceData, meta i
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	// Choose either the Octavia or Neutron create options.
@@ -130,7 +142,7 @@ func resourceMonitorV2Create(ctx context.Context, d *schema.ResourceData, meta i
 	poolID := d.Get("pool_id").(string)
 	parentPool, err := pools.Get(lbClient, poolID).Extract()
 	if err != nil {
-		return diag.Errorf("Unable to retrieve parent openstack_lb_pool_v2 %s: %s", poolID, err)
+		return diag.Errorf("Unable to retrieve parent nhncloud_lb_pool_v2 %s: %s", poolID, err)
 	}
 
 	// Wait for parent pool to become active before continuing.
@@ -140,7 +152,7 @@ func resourceMonitorV2Create(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] openstack_lb_monitor_v2 create options: %#v", createOpts)
+	log.Printf("[DEBUG] nhncloud_lb_monitor_v2 create options: %#v", createOpts)
 	var monitor *neutronmonitors.Monitor
 	err = resource.Retry(timeout, func() *resource.RetryError {
 		monitor, err = neutronmonitors.Create(lbClient, createOpts).Extract()
@@ -151,7 +163,7 @@ func resourceMonitorV2Create(ctx context.Context, d *schema.ResourceData, meta i
 	})
 
 	if err != nil {
-		return diag.Errorf("Unable to create openstack_lb_monitor_v2: %s", err)
+		return diag.Errorf("Unable to create nhncloud_lb_monitor_v2: %s", err)
 	}
 
 	// Wait for monitor to become active before continuing
@@ -169,7 +181,7 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	// Use Octavia monitor body if Octavia/LBaaS is enabled.
@@ -179,7 +191,7 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 			return diag.FromErr(CheckDeleted(d, err, "monitor"))
 		}
 
-		log.Printf("[DEBUG] Retrieved openstack_lb_monitor_v2 %s: %#v", d.Id(), monitor)
+		log.Printf("[DEBUG] Retrieved nhncloud_lb_monitor_v2 %s: %#v", d.Id(), monitor)
 
 		d.Set("tenant_id", monitor.ProjectID)
 		d.Set("type", monitor.Type)
@@ -193,8 +205,9 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 		d.Set("admin_state_up", monitor.AdminStateUp)
 		d.Set("name", monitor.Name)
 		d.Set("region", GetRegion(d, config))
+		d.Set("host_header", monitor.HostHeader)
 
-		// OpenContrail workaround (https://github.com/terraform-provider-openstack/terraform-provider-openstack/issues/762)
+		// OpenContrail workaround (https://github.com/terraform-provider-nhncloud/terraform-provider-nhncloud/issues/762)
 		if len(monitor.Pools) > 0 && monitor.Pools[0].ID != "" {
 			d.Set("pool_id", monitor.Pools[0].ID)
 		}
@@ -208,9 +221,9 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(CheckDeleted(d, err, "monitor"))
 	}
 
-	log.Printf("[DEBUG] Retrieved openstack_lb_monitor_v2 %s: %#v", d.Id(), monitor)
+	log.Printf("[DEBUG] Retrieved nhncloud_lb_monitor_v2 %s: %#v", d.Id(), monitor)
 
-	// OpenContrail workaround (https://github.com/terraform-provider-openstack/terraform-provider-openstack/issues/762)
+	// OpenContrail workaround (https://github.com/terraform-provider-nhncloud/terraform-provider-nhncloud/issues/762)
 	if len(monitor.Pools) > 0 && monitor.Pools[0].ID != "" {
 		d.Set("pool_id", monitor.Pools[0].ID)
 	}
@@ -226,6 +239,7 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("admin_state_up", monitor.AdminStateUp)
 	d.Set("name", monitor.Name)
 	d.Set("region", GetRegion(d, config))
+	d.Set("host_header", monitor.HostHeader)
 
 	return nil
 }
@@ -234,12 +248,12 @@ func resourceMonitorV2Update(ctx context.Context, d *schema.ResourceData, meta i
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	updateOpts := chooseLBV2MonitorUpdateOpts(d, config)
 	if updateOpts == nil {
-		log.Printf("[DEBUG] openstack_lb_monitor_v2 %s: nothing to update", d.Id())
+		log.Printf("[DEBUG] nhncloud_lb_monitor_v2 %s: nothing to update", d.Id())
 		return resourceMonitorV2Read(ctx, d, meta)
 	}
 
@@ -247,13 +261,13 @@ func resourceMonitorV2Update(ctx context.Context, d *schema.ResourceData, meta i
 	poolID := d.Get("pool_id").(string)
 	parentPool, err := pools.Get(lbClient, poolID).Extract()
 	if err != nil {
-		return diag.Errorf("Unable to retrieve parent openstack_lb_pool_v2 %s: %s", poolID, err)
+		return diag.Errorf("Unable to retrieve parent nhncloud_lb_pool_v2 %s: %s", poolID, err)
 	}
 
 	// Get a clean copy of the monitor.
 	monitor, err := neutronmonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
-		return diag.Errorf("Unable to retrieve openstack_lb_monitor_v2 %s: %s", d.Id(), err)
+		return diag.Errorf("Unable to retrieve nhncloud_lb_monitor_v2 %s: %s", d.Id(), err)
 	}
 
 	// Wait for parent pool to become active before continuing.
@@ -269,7 +283,7 @@ func resourceMonitorV2Update(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] openstack_lb_monitor_v2 %s update options: %#v", d.Id(), updateOpts)
+	log.Printf("[DEBUG] nhncloud_lb_monitor_v2 %s update options: %#v", d.Id(), updateOpts)
 	err = resource.Retry(timeout, func() *resource.RetryError {
 		_, err = neutronmonitors.Update(lbClient, d.Id(), updateOpts).Extract()
 		if err != nil {
@@ -279,7 +293,7 @@ func resourceMonitorV2Update(ctx context.Context, d *schema.ResourceData, meta i
 	})
 
 	if err != nil {
-		return diag.Errorf("Unable to update openstack_lb_monitor_v2 %s: %s", d.Id(), err)
+		return diag.Errorf("Unable to update nhncloud_lb_monitor_v2 %s: %s", d.Id(), err)
 	}
 
 	// Wait for monitor to become active before continuing
@@ -295,21 +309,21 @@ func resourceMonitorV2Delete(ctx context.Context, d *schema.ResourceData, meta i
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	// Get a clean copy of the parent pool.
 	poolID := d.Get("pool_id").(string)
 	parentPool, err := pools.Get(lbClient, poolID).Extract()
 	if err != nil {
-		return diag.Errorf("Unable to retrieve parent openstack_lb_pool_v2 (%s)"+
-			" for the openstack_lb_monitor_v2: %s", poolID, err)
+		return diag.Errorf("Unable to retrieve parent nhncloud_lb_pool_v2 (%s)"+
+			" for the nhncloud_lb_monitor_v2: %s", poolID, err)
 	}
 
 	// Get a clean copy of the monitor.
 	monitor, err := neutronmonitors.Get(lbClient, d.Id()).Extract()
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Unable to retrieve openstack_lb_monitor_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Unable to retrieve nhncloud_lb_monitor_v2"))
 	}
 
 	// Wait for parent pool to become active before continuing
@@ -319,7 +333,7 @@ func resourceMonitorV2Delete(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] Deleting openstack_lb_monitor_v2 %s", d.Id())
+	log.Printf("[DEBUG] Deleting nhncloud_lb_monitor_v2 %s", d.Id())
 	err = resource.Retry(timeout, func() *resource.RetryError {
 		err = neutronmonitors.Delete(lbClient, d.Id()).ExtractErr()
 		if err != nil {
@@ -329,7 +343,7 @@ func resourceMonitorV2Delete(ctx context.Context, d *schema.ResourceData, meta i
 	})
 
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error deleting openstack_lb_monitor_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_lb_monitor_v2"))
 	}
 
 	// Wait for monitor to become DELETED
@@ -346,7 +360,7 @@ func resourceMonitorV2Import(ctx context.Context, d *schema.ResourceData, meta i
 	monitorID := parts[0]
 
 	if len(monitorID) == 0 {
-		return nil, fmt.Errorf("Invalid format specified for openstack_lb_monitor_v2. Format must be <monitorID>[/<poolID>]")
+		return nil, fmt.Errorf("Invalid format specified for nhncloud_lb_monitor_v2. Format must be <monitorID>[/<poolID>]")
 	}
 
 	d.SetId(monitorID)

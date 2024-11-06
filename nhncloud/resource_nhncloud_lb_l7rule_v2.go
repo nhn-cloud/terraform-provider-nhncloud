@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/l7policies"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/l7policies"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/listeners"
 )
 
 func resourceL7RuleV2() *schema.Resource {
@@ -109,7 +109,7 @@ func resourceL7RuleV2Create(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	// Assign some required variables for use in creation.
@@ -198,7 +198,7 @@ func resourceL7RuleV2Read(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	l7policyID := d.Get("l7policy_id").(string)
@@ -226,7 +226,7 @@ func resourceL7RuleV2Update(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	// Assign some required variables for use in updating.
@@ -318,7 +318,7 @@ func resourceL7RuleV2Delete(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	timeout := d.Timeout(schema.TimeoutDelete)
@@ -381,7 +381,7 @@ func resourceL7RuleV2Import(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating OpenStack networking client: %s", err)
+		return nil, fmt.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	listenerID := ""
