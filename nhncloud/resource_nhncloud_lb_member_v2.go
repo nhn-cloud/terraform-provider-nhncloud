@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	octaviapools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	neutronpools "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+	octaviapools "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/pools"
+	neutronpools "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/pools"
 )
 
 func resourceMemberV2() *schema.Resource {
@@ -109,6 +109,12 @@ func resourceMemberV2() *schema.Resource {
 				ForceNew:     false,
 				ValidateFunc: validation.IntBetween(1, 65535),
 			},
+
+			"operating_status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -117,7 +123,7 @@ func resourceMemberV2Create(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	adminStateUp := d.Get("admin_state_up").(bool)
@@ -268,7 +274,7 @@ func resourceMemberV2Read(ctx context.Context, d *schema.ResourceData, meta inte
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	poolID := d.Get("pool_id").(string)
@@ -292,6 +298,7 @@ func resourceMemberV2Read(ctx context.Context, d *schema.ResourceData, meta inte
 		d.Set("monitor_address", member.MonitorAddress)
 		d.Set("monitor_port", member.MonitorPort)
 		d.Set("backup", member.Backup)
+		d.Set("operating_status", member.OperatingStatus)
 
 		return nil
 	}
@@ -311,6 +318,7 @@ func resourceMemberV2Read(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("address", member.Address)
 	d.Set("protocol_port", member.ProtocolPort)
 	d.Set("region", GetRegion(d, config))
+	d.Set("operating_status", member.OperatingStatus)
 
 	return nil
 }
@@ -319,7 +327,7 @@ func resourceMemberV2Update(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	if config.UseOctavia {
@@ -463,7 +471,7 @@ func resourceMemberV2Delete(ctx context.Context, d *schema.ResourceData, meta in
 	config := meta.(*Config)
 	lbClient, err := chooseLBV2Client(d, config)
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack networking client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud networking client: %s", err)
 	}
 
 	if config.UseOctavia {

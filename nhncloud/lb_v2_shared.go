@@ -10,16 +10,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/gophercloud/gophercloud"
-	octavialisteners "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	octaviamonitors "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	octaviapools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	neutronl7policies "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/l7policies"
-	neutronlisteners "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
-	neutronloadbalancers "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
-	neutronmonitors "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
-	neutronpools "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/pools"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	octavialisteners "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/listeners"
+	octavialoadbalancers "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/loadbalancers"
+	octaviamonitors "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/monitors"
+	octaviapools "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/pools"
+	neutronl7policies "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/l7policies"
+	neutronlisteners "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/listeners"
+	neutronloadbalancers "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/loadbalancers"
+	neutronmonitors "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/monitors"
+	neutronpools "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/pools"
 )
 
 const octaviaLBClientType = "load-balancer"
@@ -194,6 +194,11 @@ func chooseLBV2ListenerCreateOpts(d *schema.ResourceData, config *Config) (neutr
 			opts.Tags = expandToStringSlice(tags)
 		}
 
+		if v, ok := d.GetOk("keepalive_timeout"); ok {
+			keepaliveTimeout := v.(int)
+			opts.KeepaliveTimeout = &keepaliveTimeout
+		}
+
 		// Get and check insert  headers map.
 		rawHeaders := d.Get("insert_headers").(map[string]interface{})
 		headers, err := expandLBV2ListenerHeadersMap(rawHeaders)
@@ -233,6 +238,11 @@ func chooseLBV2ListenerCreateOpts(d *schema.ResourceData, config *Config) (neutr
 	if v, ok := d.GetOk("connection_limit"); ok {
 		connectionLimit := v.(int)
 		opts.ConnLimit = &connectionLimit
+	}
+
+	if v, ok := d.GetOk("keepalive_timeout"); ok {
+		keepaliveTimeout := v.(int)
+		opts.KeepaliveTimeout = &keepaliveTimeout
 	}
 
 	createOpts = opts
@@ -354,6 +364,12 @@ func chooseLBV2ListenerUpdateOpts(d *schema.ResourceData, config *Config) (neutr
 			}
 		}
 
+		if d.HasChange("keepalive_timeout") {
+			hasChange = true
+			keepaliveTimeout := d.Get("keepalive_timeout").(int)
+			opts.KeepaliveTimeout = &keepaliveTimeout
+		}
+
 		if hasChange {
 			return opts, nil
 		}
@@ -406,6 +422,12 @@ func chooseLBV2ListenerUpdateOpts(d *schema.ResourceData, config *Config) (neutr
 		hasChange = true
 		asu := d.Get("admin_state_up").(bool)
 		opts.AdminStateUp = &asu
+	}
+
+	if d.HasChange("keepalive_timeout") {
+		hasChange = true
+		keepaliveTimeout := d.Get("keepalive_timeout").(int)
+		opts.KeepaliveTimeout = &keepaliveTimeout
 	}
 
 	if hasChange {
@@ -494,35 +516,39 @@ func chooseLBV2MonitorCreateOpts(d *schema.ResourceData, config *Config) neutron
 	if config.UseOctavia {
 		// Use Octavia.
 		opts := octaviamonitors.CreateOpts{
-			PoolID:         d.Get("pool_id").(string),
-			TenantID:       d.Get("tenant_id").(string),
-			Type:           d.Get("type").(string),
-			Delay:          d.Get("delay").(int),
-			Timeout:        d.Get("timeout").(int),
-			MaxRetries:     d.Get("max_retries").(int),
-			MaxRetriesDown: d.Get("max_retries_down").(int),
-			URLPath:        d.Get("url_path").(string),
-			HTTPMethod:     d.Get("http_method").(string),
-			ExpectedCodes:  d.Get("expected_codes").(string),
-			Name:           d.Get("name").(string),
-			AdminStateUp:   &adminStateUp,
+			PoolID:          d.Get("pool_id").(string),
+			TenantID:        d.Get("tenant_id").(string),
+			Type:            d.Get("type").(string),
+			Delay:           d.Get("delay").(int),
+			Timeout:         d.Get("timeout").(int),
+			MaxRetries:      d.Get("max_retries").(int),
+			MaxRetriesDown:  d.Get("max_retries_down").(int),
+			URLPath:         d.Get("url_path").(string),
+			HTTPMethod:      d.Get("http_method").(string),
+			ExpectedCodes:   d.Get("expected_codes").(string),
+			Name:            d.Get("name").(string),
+			AdminStateUp:    &adminStateUp,
+			HostHeader:      d.Get("host_header").(string),
+			HealthCheckPort: d.Get("health_check_port").(int),
 		}
 
 		createOpts = opts
 	} else {
 		// Use Neutron.
 		opts := neutronmonitors.CreateOpts{
-			PoolID:        d.Get("pool_id").(string),
-			TenantID:      d.Get("tenant_id").(string),
-			Type:          d.Get("type").(string),
-			Delay:         d.Get("delay").(int),
-			Timeout:       d.Get("timeout").(int),
-			MaxRetries:    d.Get("max_retries").(int),
-			URLPath:       d.Get("url_path").(string),
-			HTTPMethod:    d.Get("http_method").(string),
-			ExpectedCodes: d.Get("expected_codes").(string),
-			Name:          d.Get("name").(string),
-			AdminStateUp:  &adminStateUp,
+			PoolID:          d.Get("pool_id").(string),
+			TenantID:        d.Get("tenant_id").(string),
+			Type:            d.Get("type").(string),
+			Delay:           d.Get("delay").(int),
+			Timeout:         d.Get("timeout").(int),
+			MaxRetries:      d.Get("max_retries").(int),
+			URLPath:         d.Get("url_path").(string),
+			HTTPMethod:      d.Get("http_method").(string),
+			ExpectedCodes:   d.Get("expected_codes").(string),
+			Name:            d.Get("name").(string),
+			AdminStateUp:    &adminStateUp,
+			HostHeader:      d.Get("host_header").(string),
+			HealthCheckPort: d.Get("health_check_port").(int),
 		}
 
 		createOpts = opts
