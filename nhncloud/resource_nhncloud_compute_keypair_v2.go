@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/compute/v2/keypairs"
 )
 
 func resourceComputeKeypairV2() *schema.Resource {
@@ -72,7 +72,7 @@ func resourceComputeKeypairV2Create(ctx context.Context, d *schema.ResourceData,
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	userID := d.Get("user_id").(string)
@@ -90,11 +90,11 @@ func resourceComputeKeypairV2Create(ctx context.Context, d *schema.ResourceData,
 		MapValueSpecs(d),
 	}
 
-	log.Printf("[DEBUG] openstack_compute_keypair_v2 create options: %#v", createOpts)
+	log.Printf("[DEBUG] nhncloud_compute_keypair_v2 create options: %#v", createOpts)
 
 	kp, err := keypairs.Create(computeClient, createOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Unable to create openstack_compute_keypair_v2 %s: %s", name, err)
+		return diag.Errorf("Unable to create nhncloud_compute_keypair_v2 %s: %s", name, err)
 	}
 
 	d.SetId(kp.Name)
@@ -110,7 +110,7 @@ func resourceComputeKeypairV2Read(_ context.Context, d *schema.ResourceData, met
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	userID := d.Get("user_id").(string)
@@ -126,10 +126,10 @@ func resourceComputeKeypairV2Read(_ context.Context, d *schema.ResourceData, met
 
 	kp, err := keypairs.Get(computeClient, d.Id(), kpopts).Extract()
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error retrieving openstack_compute_keypair_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error retrieving nhncloud_compute_keypair_v2"))
 	}
 
-	log.Printf("[DEBUG] Retrieved openstack_compute_keypair_v2 %s: %#v", d.Id(), kp)
+	log.Printf("[DEBUG] Retrieved nhncloud_compute_keypair_v2 %s: %#v", d.Id(), kp)
 
 	d.Set("name", kp.Name)
 	d.Set("public_key", kp.PublicKey)
@@ -146,7 +146,7 @@ func resourceComputeKeypairV2Delete(_ context.Context, d *schema.ResourceData, m
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	userID := d.Get("user_id").(string)
@@ -163,7 +163,7 @@ func resourceComputeKeypairV2Delete(_ context.Context, d *schema.ResourceData, m
 
 	err = keypairs.Delete(computeClient, d.Id(), kpopts).ExtractErr()
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error deleting openstack_compute_keypair_v2"))
+		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_compute_keypair_v2"))
 	}
 
 	return nil

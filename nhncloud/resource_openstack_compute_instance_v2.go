@@ -20,7 +20,6 @@ import (
 	"github.com/gophercloud/gophercloud"
 	volumesV3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/schedulerhints"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/shelveunshelve"
@@ -34,6 +33,7 @@ import (
 	"github.com/gophercloud/utils/terraform/hashcode"
 	volumesV2 "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/blockstorage/v2/volumes"
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/compute/v2/extensions/bootfromvolume"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/compute/v2/keypairs"
 )
 
 func resourceComputeInstanceV2() *schema.Resource {
