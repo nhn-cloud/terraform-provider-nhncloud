@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/compute/v2/keypairs"
 )
 
 func dataSourceComputeKeypairV2() *schema.Resource {
@@ -44,18 +44,18 @@ func dataSourceComputeKeypairV2Read(ctx context.Context, d *schema.ResourceData,
 	config := meta.(*Config)
 	computeClient, err := config.ComputeV2Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack compute client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud compute client: %s", err)
 	}
 
 	name := d.Get("name").(string)
 	kp, err := keypairs.Get(computeClient, name, keypairs.GetOpts{}).Extract()
 	if err != nil {
-		return diag.Errorf("Error retrieving openstack_compute_keypair_v2 %s: %s", name, err)
+		return diag.Errorf("Error retrieving nhncloud_compute_keypair_v2 %s: %s", name, err)
 	}
 
 	d.SetId(name)
 
-	log.Printf("[DEBUG] Retrieved openstack_compute_keypair_v2 %s: %#v", d.Id(), kp)
+	log.Printf("[DEBUG] Retrieved nhncloud_compute_keypair_v2 %s: %#v", d.Id(), kp)
 
 	d.Set("fingerprint", kp.Fingerprint)
 	d.Set("public_key", kp.PublicKey)
