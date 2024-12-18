@@ -2,6 +2,7 @@ package nhncloud
 
 import (
 	"context"
+	"github.com/gophercloud/gophercloud"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -222,6 +223,14 @@ func dataSourceNetworkingVPCSubnetV2Read(ctx context.Context, d *schema.Resource
 
 	subnet := allSubnets[0]
 	subnetDetail, err := vpcsubnets.Get(networkingClient, subnet.ID).Extract()
+	if err != nil {
+		if _, ok := err.(gophercloud.ErrDefault404); ok {
+			d.SetId("")
+			return nil
+		}
+
+		return diag.Errorf("Error retrieving nhncloud_networking_vpcsubnet_v2: %s", err)
+	}
 
 	log.Printf("[DEBUG] Retrieved nhncloud_networking_vpcsubnet_v2 %s: %+v", subnet.ID, subnet)
 
