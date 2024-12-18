@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	octavialoadbalancers "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	octavialoadbalancers "github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/loadbalancer/v2/loadbalancers"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/networking/v2/extensions/lbaas_v2/loadbalancers"
 )
 
 func TestAccLBV2LoadBalancer_basic(t *testing.T) {
@@ -34,21 +34,21 @@ func TestAccLBV2LoadBalancer_basic(t *testing.T) {
 			{
 				Config: testAccLbV2LoadBalancerConfigBasic(lbProvider),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLBV2LoadBalancerExists("openstack_lb_loadbalancer_v2.loadbalancer_1", &lb),
-					testAccCheckLBV2LoadBalancerHasTag("openstack_lb_loadbalancer_v2.loadbalancer_1", "tag1"),
-					testAccCheckLBV2LoadBalancerTagCount("openstack_lb_loadbalancer_v2.loadbalancer_1", 1),
+					testAccCheckLBV2LoadBalancerExists("nhncloud_lb_loadbalancer_v2.loadbalancer_1", &lb),
+					testAccCheckLBV2LoadBalancerHasTag("nhncloud_lb_loadbalancer_v2.loadbalancer_1", "tag1"),
+					testAccCheckLBV2LoadBalancerTagCount("nhncloud_lb_loadbalancer_v2.loadbalancer_1", 1),
 				),
 			},
 			{
 				Config: testAccLbV2LoadBalancerConfigUpdate(lbProvider),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLBV2LoadBalancerHasTag("openstack_lb_loadbalancer_v2.loadbalancer_1", "tag1"),
-					testAccCheckLBV2LoadBalancerHasTag("openstack_lb_loadbalancer_v2.loadbalancer_1", "tag2"),
-					testAccCheckLBV2LoadBalancerTagCount("openstack_lb_loadbalancer_v2.loadbalancer_1", 2),
+					testAccCheckLBV2LoadBalancerHasTag("nhncloud_lb_loadbalancer_v2.loadbalancer_1", "tag1"),
+					testAccCheckLBV2LoadBalancerHasTag("nhncloud_lb_loadbalancer_v2.loadbalancer_1", "tag2"),
+					testAccCheckLBV2LoadBalancerTagCount("nhncloud_lb_loadbalancer_v2.loadbalancer_1", 2),
 					resource.TestCheckResourceAttr(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", "name", "loadbalancer_1_updated"),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", "name", "loadbalancer_1_updated"),
 					resource.TestMatchResourceAttr(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", "vip_port_id",
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", "vip_port_id",
 						regexp.MustCompile("^[a-f0-9-]+")),
 				),
 			},
@@ -73,13 +73,13 @@ func TestAccLBV2LoadBalancer_secGroup(t *testing.T) {
 				Config: testAccLbV2LoadBalancerSecGroup,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBV2LoadBalancerExists(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", &lb),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", &lb),
 					testAccCheckNetworkingV2SecGroupExists(
-						"openstack_networking_secgroup_v2.secgroup_1", &sg1),
+						"nhncloud_networking_secgroup_v2.secgroup_1", &sg1),
 					testAccCheckNetworkingV2SecGroupExists(
-						"openstack_networking_secgroup_v2.secgroup_1", &sg2),
+						"nhncloud_networking_secgroup_v2.secgroup_1", &sg2),
 					resource.TestCheckResourceAttr(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", "security_group_ids.#", "1"),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", "security_group_ids.#", "1"),
 					testAccCheckLBV2LoadBalancerHasSecGroup(&lb, &sg1),
 				),
 			},
@@ -87,13 +87,13 @@ func TestAccLBV2LoadBalancer_secGroup(t *testing.T) {
 				Config: testAccLbV2LoadBalancerSecGroupUpdate1,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBV2LoadBalancerExists(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", &lb),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", &lb),
 					testAccCheckNetworkingV2SecGroupExists(
-						"openstack_networking_secgroup_v2.secgroup_2", &sg1),
+						"nhncloud_networking_secgroup_v2.secgroup_2", &sg1),
 					testAccCheckNetworkingV2SecGroupExists(
-						"openstack_networking_secgroup_v2.secgroup_2", &sg2),
+						"nhncloud_networking_secgroup_v2.secgroup_2", &sg2),
 					resource.TestCheckResourceAttr(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", "security_group_ids.#", "2"),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", "security_group_ids.#", "2"),
 					testAccCheckLBV2LoadBalancerHasSecGroup(&lb, &sg1),
 					testAccCheckLBV2LoadBalancerHasSecGroup(&lb, &sg2),
 				),
@@ -102,13 +102,13 @@ func TestAccLBV2LoadBalancer_secGroup(t *testing.T) {
 				Config: testAccLbV2LoadBalancerSecGroupUpdate2,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBV2LoadBalancerExists(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", &lb),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", &lb),
 					testAccCheckNetworkingV2SecGroupExists(
-						"openstack_networking_secgroup_v2.secgroup_2", &sg1),
+						"nhncloud_networking_secgroup_v2.secgroup_2", &sg1),
 					testAccCheckNetworkingV2SecGroupExists(
-						"openstack_networking_secgroup_v2.secgroup_2", &sg2),
+						"nhncloud_networking_secgroup_v2.secgroup_2", &sg2),
 					resource.TestCheckResourceAttr(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", "security_group_ids.#", "1"),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", "security_group_ids.#", "1"),
 					testAccCheckLBV2LoadBalancerHasSecGroup(&lb, &sg2),
 				),
 			},
@@ -132,7 +132,7 @@ func TestAccLBV2LoadBalancer_vip_network(t *testing.T) {
 			{
 				Config: testAccLbV2LoadBalancerConfigVIPNetwork,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLBV2LoadBalancerExists("openstack_lb_loadbalancer_v2.loadbalancer_1", &lb),
+					testAccCheckLBV2LoadBalancerExists("nhncloud_lb_loadbalancer_v2.loadbalancer_1", &lb),
 				),
 			},
 		},
@@ -157,11 +157,11 @@ func TestAccLBV2LoadBalancer_vip_port_id(t *testing.T) {
 				Config: testAccLbV2LoadBalancerConfigVIPPortID,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckLBV2LoadBalancerExists(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", &lb),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", &lb),
 					testAccCheckNetworkingV2PortExists(
-						"openstack_networking_port_v2.port_1", &port),
+						"nhncloud_networking_port_v2.port_1", &port),
 					resource.TestCheckResourceAttrPtr(
-						"openstack_lb_loadbalancer_v2.loadbalancer_1", "vip_port_id", &port.ID),
+						"nhncloud_lb_loadbalancer_v2.loadbalancer_1", "vip_port_id", &port.ID),
 				),
 			},
 		},
@@ -176,7 +176,7 @@ func testAccCheckLBV2LoadBalancerDestroy(s *terraform.State) error {
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openstack_lb_loadbalancer_v2" {
+		if rs.Type != "nhncloud_lb_loadbalancer_v2" {
 			continue
 		}
 
@@ -317,22 +317,22 @@ func testAccCheckLBV2LoadBalancerHasSecGroup(
 
 func testAccLbV2LoadBalancerConfigBasic(lbProvider string) string {
 	return fmt.Sprintf(`
-    resource "openstack_networking_network_v2" "network_1" {
+    resource "nhncloud_networking_network_v2" "network_1" {
       name = "network_1"
       admin_state_up = "true"
     }
 
-    resource "openstack_networking_subnet_v2" "subnet_1" {
+    resource "nhncloud_networking_subnet_v2" "subnet_1" {
       name = "subnet_1"
       cidr = "192.168.199.0/24"
       ip_version = 4
-      network_id = "${openstack_networking_network_v2.network_1.id}"
+      network_id = "${nhncloud_networking_network_v2.network_1.id}"
     }
 
-    resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+    resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
       name = "loadbalancer_1"
       loadbalancer_provider = "%s"
-      vip_subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
+      vip_subnet_id = "${nhncloud_networking_subnet_v2.subnet_1.id}"
 	  tags = ["tag1"]
 
       timeouts {
@@ -345,23 +345,23 @@ func testAccLbV2LoadBalancerConfigBasic(lbProvider string) string {
 
 func testAccLbV2LoadBalancerConfigUpdate(lbProvider string) string {
 	return fmt.Sprintf(`
-    resource "openstack_networking_network_v2" "network_1" {
+    resource "nhncloud_networking_network_v2" "network_1" {
       name = "network_1"
       admin_state_up = "true"
     }
 
-    resource "openstack_networking_subnet_v2" "subnet_1" {
+    resource "nhncloud_networking_subnet_v2" "subnet_1" {
       name = "subnet_1"
       cidr = "192.168.199.0/24"
       ip_version = 4
-      network_id = "${openstack_networking_network_v2.network_1.id}"
+      network_id = "${nhncloud_networking_network_v2.network_1.id}"
     }
 
-    resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+    resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
       name = "loadbalancer_1_updated"
       loadbalancer_provider = "%s"
       admin_state_up = "true"
-      vip_subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
+      vip_subnet_id = "${nhncloud_networking_subnet_v2.subnet_1.id}"
 	  tags = ["tag1", "tag2"]
 
       timeouts {
@@ -373,32 +373,32 @@ func testAccLbV2LoadBalancerConfigUpdate(lbProvider string) string {
 }
 
 const testAccLbV2LoadBalancerSecGroup = `
-resource "openstack_networking_secgroup_v2" "secgroup_1" {
+resource "nhncloud_networking_secgroup_v2" "secgroup_1" {
   name = "secgroup_1"
   description = "secgroup_1"
 }
 
-resource "openstack_networking_secgroup_v2" "secgroup_2" {
+resource "nhncloud_networking_secgroup_v2" "secgroup_2" {
   name = "secgroup_2"
   description = "secgroup_2"
 }
 
-resource "openstack_networking_network_v2" "network_1" {
+resource "nhncloud_networking_network_v2" "network_1" {
   name = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_subnet_v2" "subnet_1" {
+resource "nhncloud_networking_subnet_v2" "subnet_1" {
   name = "subnet_1"
-  network_id = "${openstack_networking_network_v2.network_1.id}"
+  network_id = "${nhncloud_networking_network_v2.network_1.id}"
   cidr = "192.168.199.0/24"
 }
 
-resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
     name = "loadbalancer_1"
-    vip_subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
+    vip_subnet_id = "${nhncloud_networking_subnet_v2.subnet_1.id}"
     security_group_ids = [
-      "${openstack_networking_secgroup_v2.secgroup_1.id}"
+      "${nhncloud_networking_secgroup_v2.secgroup_1.id}"
     ]
 
     timeouts {
@@ -410,33 +410,33 @@ resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
 `
 
 const testAccLbV2LoadBalancerSecGroupUpdate1 = `
-resource "openstack_networking_secgroup_v2" "secgroup_1" {
+resource "nhncloud_networking_secgroup_v2" "secgroup_1" {
   name = "secgroup_1"
   description = "secgroup_1"
 }
 
-resource "openstack_networking_secgroup_v2" "secgroup_2" {
+resource "nhncloud_networking_secgroup_v2" "secgroup_2" {
   name = "secgroup_2"
   description = "secgroup_2"
 }
 
-resource "openstack_networking_network_v2" "network_1" {
+resource "nhncloud_networking_network_v2" "network_1" {
   name = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_subnet_v2" "subnet_1" {
+resource "nhncloud_networking_subnet_v2" "subnet_1" {
   name = "subnet_1"
-  network_id = "${openstack_networking_network_v2.network_1.id}"
+  network_id = "${nhncloud_networking_network_v2.network_1.id}"
   cidr = "192.168.199.0/24"
 }
 
-resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
+  vip_subnet_id = "${nhncloud_networking_subnet_v2.subnet_1.id}"
   security_group_ids = [
-    "${openstack_networking_secgroup_v2.secgroup_1.id}",
-    "${openstack_networking_secgroup_v2.secgroup_2.id}"
+    "${nhncloud_networking_secgroup_v2.secgroup_1.id}",
+    "${nhncloud_networking_secgroup_v2.secgroup_2.id}"
   ]
 
   timeouts {
@@ -448,34 +448,34 @@ resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
 `
 
 const testAccLbV2LoadBalancerSecGroupUpdate2 = `
-resource "openstack_networking_secgroup_v2" "secgroup_1" {
+resource "nhncloud_networking_secgroup_v2" "secgroup_1" {
   name = "secgroup_1"
   description = "secgroup_1"
 }
 
-resource "openstack_networking_secgroup_v2" "secgroup_2" {
+resource "nhncloud_networking_secgroup_v2" "secgroup_2" {
   name = "secgroup_2"
   description = "secgroup_2"
 }
 
-resource "openstack_networking_network_v2" "network_1" {
+resource "nhncloud_networking_network_v2" "network_1" {
   name = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_subnet_v2" "subnet_1" {
+resource "nhncloud_networking_subnet_v2" "subnet_1" {
   name = "subnet_1"
-  network_id = "${openstack_networking_network_v2.network_1.id}"
+  network_id = "${nhncloud_networking_network_v2.network_1.id}"
   cidr = "192.168.199.0/24"
 }
 
-resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
   name = "loadbalancer_1"
-  vip_subnet_id = "${openstack_networking_subnet_v2.subnet_1.id}"
+  vip_subnet_id = "${nhncloud_networking_subnet_v2.subnet_1.id}"
   security_group_ids = [
-    "${openstack_networking_secgroup_v2.secgroup_2.id}"
+    "${nhncloud_networking_secgroup_v2.secgroup_2.id}"
   ]
-  depends_on = ["openstack_networking_secgroup_v2.secgroup_1"]
+  depends_on = ["nhncloud_networking_secgroup_v2.secgroup_1"]
 
   timeouts {
     create = "15m"
@@ -486,23 +486,23 @@ resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
 `
 
 const testAccLbV2LoadBalancerConfigVIPNetwork = `
-resource "openstack_networking_network_v2" "network_1" {
+resource "nhncloud_networking_network_v2" "network_1" {
   name = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_subnet_v2" "subnet_1" {
+resource "nhncloud_networking_subnet_v2" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${openstack_networking_network_v2.network_1.id}"
+  network_id = "${nhncloud_networking_network_v2.network_1.id}"
 }
 
-resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
   name = "loadbalancer_1"
   loadbalancer_provider = "octavia"
-  vip_network_id = "${openstack_networking_network_v2.network_1.id}"
-  depends_on = ["openstack_networking_subnet_v2.subnet_1"]
+  vip_network_id = "${nhncloud_networking_network_v2.network_1.id}"
+  depends_on = ["nhncloud_networking_subnet_v2.subnet_1"]
   timeouts {
     create = "15m"
     update = "15m"
@@ -512,30 +512,30 @@ resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
 `
 
 const testAccLbV2LoadBalancerConfigVIPPortID = `
-resource "openstack_networking_network_v2" "network_1" {
+resource "nhncloud_networking_network_v2" "network_1" {
   name = "network_1"
   admin_state_up = "true"
 }
 
-resource "openstack_networking_subnet_v2" "subnet_1" {
+resource "nhncloud_networking_subnet_v2" "subnet_1" {
   name = "subnet_1"
   cidr = "192.168.199.0/24"
   ip_version = 4
-  network_id = "${openstack_networking_network_v2.network_1.id}"
+  network_id = "${nhncloud_networking_network_v2.network_1.id}"
 }
 
-resource "openstack_networking_port_v2" "port_1" {
+resource "nhncloud_networking_port_v2" "port_1" {
   name           = "port_1"
-  network_id     = "${openstack_networking_network_v2.network_1.id}"
+  network_id     = "${nhncloud_networking_network_v2.network_1.id}"
   admin_state_up = "true"
-  depends_on = ["openstack_networking_subnet_v2.subnet_1"]
+  depends_on = ["nhncloud_networking_subnet_v2.subnet_1"]
 }
 
-resource "openstack_lb_loadbalancer_v2" "loadbalancer_1" {
+resource "nhncloud_lb_loadbalancer_v2" "loadbalancer_1" {
   name = "loadbalancer_1"
   loadbalancer_provider = "octavia"
-  vip_port_id = "${openstack_networking_port_v2.port_1.id}"
-  depends_on = ["openstack_networking_port_v2.port_1"]
+  vip_port_id = "${nhncloud_networking_port_v2.port_1.id}"
+  depends_on = ["nhncloud_networking_port_v2.port_1"]
   timeouts {
     create = "15m"
     update = "15m"
