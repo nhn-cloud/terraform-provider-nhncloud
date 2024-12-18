@@ -57,10 +57,14 @@ func resourceNetworkingRoutingtableV2Create(ctx context.Context, d *schema.Resou
 
 	createOpts := RoutingtableCreateOpts{
 		routingtables.CreateOpts{
-			Name:        d.Get("name").(string),
-			VpcID:       d.Get("vpc_id").(string),
-			Distributed: d.Get("distributed").(bool),
+			Name:  d.Get("name").(string),
+			VpcID: d.Get("vpc_id").(string),
 		},
+	}
+
+	if dRaw, ok := d.GetOkExists("distributed"); ok {
+		d := dRaw.(bool)
+		createOpts.Distributed = &d
 	}
 
 	var finalCreateOpts routingtables.CreateOptsBuilder
@@ -73,11 +77,6 @@ func resourceNetworkingRoutingtableV2Create(ctx context.Context, d *schema.Resou
 	}
 
 	log.Printf("[DEBUG] Waiting for nhncloud_networking_routingtable_v2 %s to become available.", n.ID)
-
-	if dRaw, ok := d.GetOkExists("distributed"); ok {
-		d := dRaw.(bool)
-		createOpts.Distributed = d
-	}
 
 	d.SetId(n.ID)
 
