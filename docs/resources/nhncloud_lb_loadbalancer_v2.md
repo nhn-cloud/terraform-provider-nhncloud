@@ -21,6 +21,8 @@ resource "nhncloud_lb_loadbalancer_v2" "tf_loadbalancer_01"{
 * `vip_address` - (Optional) The IP address of the load balancer.
 * `security_group_ids` - (Optional) The list of security group IDs to be applied for the load balancer.<br>**Security groups must be specified by ID, not by name**.
 * `admin_state_up` - (Optional) Administrator control status.
+* `loadbalancer_type` - (Optional) It is a load balancer type, which can be used as `shared` or`dedicated`
+and set as `shared` if omitted.
 
 ## Attribute Reference
 
@@ -35,3 +37,7 @@ The following attributes are exported:
 * `admin_state_up` - See Argument Reference above.
 * `security_group_ids` - See Argument Reference above.
 * `vip_port_id` - The Port ID of the Load Balancer IP.
+* `loadbalancer_type` - See Argument Reference above.
+* `ipacl_groups` - IP ACL group object applied to the load balancer.
+* `ipacl_group_action` - The action of IP ACL groups applied to the load balancer
+Should be one of the following: `null`, `DENY`, or `ALLOW`.
