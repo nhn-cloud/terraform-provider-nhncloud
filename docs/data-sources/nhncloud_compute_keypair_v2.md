@@ -1,4 +1,4 @@
-# Data Source: nhncloud_compute_flavor_v2
+# Data Source: nhncloud_compute_keypair_v2
 
 ## Example Usage
 

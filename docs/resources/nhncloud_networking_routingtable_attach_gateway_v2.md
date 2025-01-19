@@ -1,16 +1,15 @@
-# Resource: nhncloud_networking_routingtable_v2
+# Resource: nhncloud_networking_routingtable_attach_gateway_v2
 
 ## Example Usage
 
 ```
-resource "nhncloud_networking_vpc_v2" "resource-vpc-01" {
+resource "nhncloud_networking_routingtable_v2" "resource-rt-01" {
   ...
 }
 
-resource "nhncloud_networking_routingtable_v2" "resource-rt-01" {
-  name = "resource-rt-01"
-  vpc_id = nhncloud_networking_vpc_v2.resource-vpc-01.id
-  distributed = false
+resource "nhncloud_networking_routingtable_attach_gateway_v2" "attach-gw-01" {
+  routingtable_id = nhncloud_networking_routingtable_v2.resource-rt-01.id
+  gateway_id = "5c7c578a-d199-4672-95d0-1980f996643f"
 }
 ```
 
