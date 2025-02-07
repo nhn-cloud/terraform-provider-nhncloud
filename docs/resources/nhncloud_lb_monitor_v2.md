@@ -14,6 +14,7 @@ resource "nhncloud_lb_monitor_v2" "tf_monitor_01"{
   http_method = "GET"
   expected_codes = "200-202"
   admin_state_up = true
+  health_check_port = 2000
 }
 ```
 
@@ -29,6 +30,7 @@ resource "nhncloud_lb_monitor_v2" "tf_monitor_01"{
 * `http_method` - (Optional) The HTTP method to use for status check<br>The default is GET.
 * `expected_codes` - (Optional) HTTP(S) response code of members to be considered as normal status <br/>expected_codes can be set as list (`200,201,202`) or range (`200-202`).
 * `admin_state_up` - (Optional) Administrator control status.
+* `health_check_port` - (Optional) Member port to be health-checked.
 
 ## Attribute Reference
 
@@ -44,3 +46,4 @@ The following attributes are exported:
 * `http_method` - See Argument Reference above.
 * `expected_codes` - See Argument Reference above.
 * `admin_state_up` - See Argument Reference above.
+* `health_check_port` - See Argument Reference above.

@@ -206,6 +206,7 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 		d.Set("name", monitor.Name)
 		d.Set("region", GetRegion(d, config))
 		d.Set("host_header", monitor.HostHeader)
+		d.Set("health_check_port", monitor.HealthCheckPort)
 
 		// OpenContrail workaround (https://github.com/terraform-provider-nhncloud/terraform-provider-nhncloud/issues/762)
 		if len(monitor.Pools) > 0 && monitor.Pools[0].ID != "" {
@@ -240,6 +241,7 @@ func resourceMonitorV2Read(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("name", monitor.Name)
 	d.Set("region", GetRegion(d, config))
 	d.Set("host_header", monitor.HostHeader)
+	d.Set("health_check_port", monitor.HealthCheckPort)
 
 	return nil
 }
