@@ -91,7 +91,6 @@ func chooseLBV2LoadbalancerUpdateOpts(d *schema.ResourceData, config *Config) (n
 			asu := d.Get("admin_state_up").(bool)
 			updateOpts.AdminStateUp = &asu
 		}
-
 		if d.HasChange("tags") {
 			hasChange = true
 			if v, ok := d.GetOk("tags"); ok {
@@ -604,6 +603,10 @@ func chooseLBV2MonitorUpdateOpts(d *schema.ResourceData, config *Config) neutron
 			hasChange = true
 			opts.HTTPMethod = d.Get("http_method").(string)
 		}
+		if d.HasChange("health_check_port") {
+			hasChange = true
+			opts.HealthCheckPort = d.Get("health_check_port").(int)
+		}
 
 		if hasChange {
 			return opts
@@ -645,6 +648,10 @@ func chooseLBV2MonitorUpdateOpts(d *schema.ResourceData, config *Config) neutron
 		if d.HasChange("http_method") {
 			hasChange = true
 			opts.HTTPMethod = d.Get("http_method").(string)
+		}
+		if d.HasChange("health_check_port") {
+			hasChange = true
+			opts.HealthCheckPort = d.Get("health_check_port").(int)
 		}
 
 		if hasChange {
