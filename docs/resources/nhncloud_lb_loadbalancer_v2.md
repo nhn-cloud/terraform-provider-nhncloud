@@ -21,8 +21,7 @@ resource "nhncloud_lb_loadbalancer_v2" "tf_loadbalancer_01"{
 * `vip_address` - (Optional) The IP address of the load balancer.
 * `security_group_ids` - (Optional) The list of security group IDs to be applied for the load balancer.<br>**Security groups must be specified by ID, not by name**.
 * `admin_state_up` - (Optional) Administrator control status.
-* `loadbalancer_type` - (Optional) It is a load balancer type, which can be used as `shared` or`dedicated`
-and set as `shared` if omitted.
+* `loadbalancer_type` - (Optional) The load balancer type that can be used as `shared` or `dedicated` and set as `shared` if omitted.
 
 ## Attribute Reference
 

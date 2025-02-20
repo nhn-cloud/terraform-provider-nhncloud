@@ -27,7 +27,7 @@ resource "nhncloud_compute_keypair_v2" "tf_kp_02" {
 
 ## Argument Reference
 
-* `region` - (Optional) The region name in which the keypair to query belongs.
+* `region` - (Optional) The region name to which the keypair to query belongs.
 * `name` - (Required) A unique name for the keypair. Changing this creates a new
     keypair.
 * `public_key` - (Optional) A pregenerated OpenSSH-formatted public key.

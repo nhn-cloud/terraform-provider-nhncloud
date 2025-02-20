@@ -29,8 +29,8 @@ resource "nhncloud_lb_monitor_v2" "tf_monitor_01"{
 * `http_method` - (Optional) The HTTP method to use for status check<br>The default is GET.
 * `expected_codes` - (Optional) HTTP(S) response code of members to be considered as normal status <br/>expected_codes can be set as list (`200,201,202`) or range (`200-202`).
 * `admin_state_up` - (Optional) Administrator control status.
-* `host_header` - (Optional) Host header field value to use for status check. When the status check type is set with `TCP`, value set in this field will be ignored.
-* `health_check_port` - (Optional) Member port to be health-checked.
+* `host_header` - (Optional) The host header field value to use for status check. When the status check type is set with `TCP`,  the value set in this field will be ignored.
+* `health_check_port` - (Optional) The member port to be health-checked.
 
 ## Attribute Reference
 

@@ -43,5 +43,5 @@ The following attributes are exported:
 * `persistence` - See Argument Reference above.
 * `admin_state_up` - See Argument Reference above.
 * `member_port` - See Argument Reference above.
-* `healthmonitor_id` - Health monitor ID of pool.
-* `operating_status` - Operating status of member.
+* `healthmonitor_id` - The health monitor ID of the pool.
+* `operating_status` - The operating status of the member.

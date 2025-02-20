@@ -11,7 +11,7 @@ data "nhncloud_compute_keypair_v2" "my_keypair"{
 ## Argument Reference
 
 * `name` - (Required) The unique name of the keypair.
-* `region` - (Optional) The region name in which the keypair to query belongs.
+* `region` - (Optional) The region name to which the keypair to query belongs.
 
 ## Attribute Reference
 
