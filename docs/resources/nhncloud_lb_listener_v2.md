@@ -56,6 +56,7 @@ resource "nhncloud_lb_listener_v2" "tf_listener_01"{
 * `sni_container_refs` - (Optional) The list of SNI certificate paths.
 * `insert_headers` - (Optional) The list of headers to be added before a request is sent to a backend member.
 * `admin_state_up` - (Optional) Administrator control status.
+* `keepalive_timeout` - (Optional) Keepalive timeout of listener.
 
 
 ## Attribute Reference
@@ -79,3 +80,4 @@ The following attributes are exported:
 * `admin_state_up` - See Argument Reference above.
 * `insert_headers` - See Argument Reference above.
 * `allowed_cidrs` - See Argument Reference above.
+* `keepalive_timeout` - See Argument Reference above.

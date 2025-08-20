@@ -28,6 +28,7 @@ resource "nhncloud_lb_pool_v2" "tf_pool_01"{
 * `persistence.type` - (Required) Session persistence type<br>One among `SOURCE_IP`, `HTTP_COOKIE`, and `APP_COOKIE` <br>Unavailable if the load balancing method is `SOURCE_IP`<br>HTTP_COOKIE and APP_COOKIE are unavailable if the protocol is `HTTPS` or `TCP`.
 * `persistence.cookie_name` - (Optional) The name of cookie <br>persistence.cookie_name is available only when the session persistence type is APP_COOKIE.
 * `admin_state_up` - (Optional) Administrator control status.
+* `member_port` - (Optional) Member's receiving port. Traffic is sent to the port. Default is `-1`.
 
 ## Attribute Reference
 
@@ -41,3 +42,6 @@ The following attributes are exported:
 * `lb_method` - See Argument Reference above.
 * `persistence` - See Argument Reference above.
 * `admin_state_up` - See Argument Reference above.
+* `member_port` - See Argument Reference above.
+* `healthmonitor_id` - The health monitor ID of the pool.
+* `operating_status` - The operating status of the member.
