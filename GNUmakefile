@@ -3,7 +3,7 @@ GOFMT_FILES?=$$(find . -name '*.go')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 
 PKG_NAME=nhncloud
-VERSION_STR=1.0.6
+VERSION_STR=1.0.7
 
 OS_IMPLEMENTATION=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 HW_PLATFORM=$(shell uname -m)
