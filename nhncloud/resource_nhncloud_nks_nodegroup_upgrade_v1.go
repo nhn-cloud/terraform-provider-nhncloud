@@ -49,25 +49,18 @@ func resourceNKSNodegroupUpgradeV1() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"options": {
-				Type:     schema.TypeList,
+			"num_buffer_nodes": {
+				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"num_buffer_nodes": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  1,
-						},
-						"num_max_unavailable_nodes": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  1,
-						},
-					},
-				},
+				Default:  1,
+			},
+
+			"num_max_unavailable_nodes": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+				Default:  1,
 			},
 
 			// computed-only
@@ -107,19 +100,12 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 		Version: d.Get("version").(string),
 	}
 
-	// Set upgrade options as direct fields instead of nested options object
-	if v, ok := d.GetOk("options"); ok {
-		optionsList := v.([]interface{})
-		if len(optionsList) > 0 {
-			optionsMap := optionsList[0].(map[string]interface{})
-
-			if numBufferNodes, ok := optionsMap["num_buffer_nodes"].(int); ok {
-				upgradeOpts.NumBufferNodes = numBufferNodes
-			}
-			if numMaxUnavailableNodes, ok := optionsMap["num_max_unavailable_nodes"].(int); ok {
-				upgradeOpts.NumMaxUnavailableNodes = numMaxUnavailableNodes
-			}
-		}
+	// Set upgrade options as direct fields
+	if v, ok := d.GetOk("num_buffer_nodes"); ok {
+		upgradeOpts.NumBufferNodes = v.(int)
+	}
+	if v, ok := d.GetOk("num_max_unavailable_nodes"); ok {
+		upgradeOpts.NumMaxUnavailableNodes = v.(int)
 	}
 
 	log.Printf("[DEBUG] Checking cluster status before upgrading NKS nodegroup %s in cluster %s to version %s", nodegroupIDOrName, clusterIDOrName, upgradeOpts.Version)

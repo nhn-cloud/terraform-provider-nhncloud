@@ -49,20 +49,11 @@ func resourceNKSClusterResizeV1() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"options": {
+			"nodes_to_remove": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"nodes_to_remove": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-					},
-				},
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
 			// computed-only
@@ -103,19 +94,13 @@ func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Set resize options
-	if v, ok := d.GetOk("options"); ok {
-		optionsList := v.([]interface{})
-		if len(optionsList) > 0 {
-			optionsMap := optionsList[0].(map[string]interface{})
-			if nodesToRemove, ok := optionsMap["nodes_to_remove"]; ok {
-				nodeList := nodesToRemove.([]interface{})
-				resizeOpts.Options = &clusters.ResizeOptions{
-					NodesToRemove: make([]string, len(nodeList)),
-				}
-				for i, node := range nodeList {
-					resizeOpts.Options.NodesToRemove[i] = node.(string)
-				}
-			}
+	if v, ok := d.GetOk("nodes_to_remove"); ok {
+		nodeList := v.([]interface{})
+		resizeOpts.Options = &clusters.ResizeOptions{
+			NodesToRemove: make([]string, len(nodeList)),
+		}
+		for i, node := range nodeList {
+			resizeOpts.Options.NodesToRemove[i] = node.(string)
 		}
 	}
 
