@@ -86,16 +86,20 @@ func resourceNKSClusterResizeV1() *schema.Resource {
 
 func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
 
 	// Build resize options
 	resizeOpts := clusters.ResizeOpts{
 		NodeCount: d.Get("node_count").(int),
+		NodeGroup: d.Get("nodegroup_id").(string),
 	}
 
 	// Set resize options
@@ -117,7 +121,7 @@ func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceDat
 
 	log.Printf("[DEBUG] Resizing NKS cluster %s to %d nodes", clusterIDOrName, resizeOpts.NodeCount)
 
-	cluster, err := clusters.Resize(containerInfraClient, clusterIDOrName, resizeOpts).Extract()
+	cluster, err := clusters.Resize(kubernetesClient, clusterIDOrName, resizeOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error resizing NKS cluster %s: %s", clusterIDOrName, err)
 	}
@@ -129,7 +133,7 @@ func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceDat
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"UPDATE_IN_PROGRESS"},
 		Target:     []string{"UPDATE_COMPLETE"},
-		Refresh:    nksClusterV1StateRefreshFunc(containerInfraClient, cluster.UUID),
+		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, cluster.UUID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      30 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -145,12 +149,15 @@ func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceDat
 
 func resourceNKSClusterResizeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
 
-	cluster, err := clusters.Get(containerInfraClient, d.Id()).Extract()
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
+
+	cluster, err := clusters.Get(kubernetesClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving NKS cluster"))
 	}

@@ -152,10 +152,13 @@ func dataSourceNKSClusterV1() *schema.Resource {
 
 func dataSourceNKSClusterV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	var clusterIDOrName string
 	if uuid, ok := d.GetOk("uuid"); ok {
@@ -168,9 +171,13 @@ func dataSourceNKSClusterV1Read(ctx context.Context, d *schema.ResourceData, met
 
 	log.Printf("[DEBUG] Retrieving NKS cluster: %s", clusterIDOrName)
 
-	cluster, err := clusters.Get(containerInfraClient, clusterIDOrName).Extract()
+	cluster, err := clusters.Get(kubernetesClient, clusterIDOrName).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve NKS cluster %s: %s", clusterIDOrName, err)
+	}
+
+	if cluster == nil {
+		return diag.Errorf("Retrieved NKS cluster is nil for ID: %s", clusterIDOrName)
 	}
 
 	log.Printf("[DEBUG] Retrieved NKS cluster %s: %+v", clusterIDOrName, cluster)

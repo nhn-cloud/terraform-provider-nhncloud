@@ -173,10 +173,13 @@ func resourceNKSClusterV1() *schema.Resource {
 
 func resourceNKSClusterV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	// Build create options
 	createOpts := clusters.CreateOpts{
@@ -249,7 +252,7 @@ func resourceNKSClusterV1Create(ctx context.Context, d *schema.ResourceData, met
 
 	log.Printf("[DEBUG] Creating NKS cluster with options: %+v", createOpts)
 
-	cluster, err := clusters.Create(containerInfraClient, createOpts).Extract()
+	cluster, err := clusters.Create(kubernetesClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating NKS cluster: %s", err)
 	}
@@ -261,7 +264,7 @@ func resourceNKSClusterV1Create(ctx context.Context, d *schema.ResourceData, met
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"CREATE_IN_PROGRESS"},
 		Target:     []string{"CREATE_COMPLETE"},
-		Refresh:    nksClusterV1StateRefreshFunc(containerInfraClient, cluster.UUID),
+		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, cluster.UUID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -277,14 +280,21 @@ func resourceNKSClusterV1Create(ctx context.Context, d *schema.ResourceData, met
 
 func resourceNKSClusterV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
 
-	cluster, err := clusters.Get(containerInfraClient, d.Id()).Extract()
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
+
+	cluster, err := clusters.Get(kubernetesClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving NKS cluster"))
+	}
+
+	if cluster == nil {
+		return diag.Errorf("Retrieved NKS cluster is nil for ID: %s", d.Id())
 	}
 
 	log.Printf("[DEBUG] Retrieved NKS cluster %s: %+v", d.Id(), cluster)
@@ -366,14 +376,34 @@ func resourceNKSClusterV1Read(ctx context.Context, d *schema.ResourceData, meta 
 
 func resourceNKSClusterV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
+	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
+
+	log.Printf("[DEBUG] Waiting for NKS cluster %s to be in a stable state before deletion", d.Id())
+
+	// Wait for cluster to be in a stable state before deletion
+	stableStateConf := &resource.StateChangeConf{
+		Pending:    []string{"UPDATE_IN_PROGRESS", "CREATE_IN_PROGRESS"},
+		Target:     []string{"CREATE_COMPLETE", "UPDATE_COMPLETE"},
+		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, d.Id()),
+		Timeout:    10 * time.Minute, // Wait up to 10 minutes for stable state
+		Delay:      30 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	_, err = stableStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		log.Printf("[WARN] Cluster %s did not reach stable state, attempting deletion anyway: %s", d.Id(), err)
 	}
 
 	log.Printf("[DEBUG] Deleting NKS cluster %s", d.Id())
 
-	err = clusters.Delete(containerInfraClient, d.Id()).ExtractErr()
+	err = clusters.Delete(kubernetesClient, d.Id()).ExtractErr()
 	if err != nil {
 		return diag.Errorf("Error deleting NKS cluster %s: %s", d.Id(), err)
 	}
@@ -382,8 +412,8 @@ func resourceNKSClusterV1Delete(ctx context.Context, d *schema.ResourceData, met
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"DELETE_IN_PROGRESS"},
-		Target:     []string{"DELETED"},
-		Refresh:    nksClusterV1StateRefreshFunc(containerInfraClient, d.Id()),
+		Target:     []string{"DELETED", "DELETE_COMPLETE"},
+		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, d.Id()),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,

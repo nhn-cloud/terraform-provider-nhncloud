@@ -28,6 +28,8 @@ const (
 
 	containerInfraV1NodeGroupMinMicroversion  = "1.9"
 	containerInfraV1ZeroNodeCountMicroversion = "1.10"
+
+	kubernetesV1NodeGroupMinMicroversion = "latest"
 )
 
 func expandContainerInfraV1LabelsMap(v map[string]interface{}) (map[string]string, error) {

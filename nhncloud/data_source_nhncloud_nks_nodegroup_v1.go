@@ -92,10 +92,13 @@ func dataSourceNKSNodegroupV1() *schema.Resource {
 
 func dataSourceNKSNodegroupV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
 
@@ -110,9 +113,13 @@ func dataSourceNKSNodegroupV1Read(ctx context.Context, d *schema.ResourceData, m
 
 	log.Printf("[DEBUG] Retrieving NKS nodegroup: cluster=%s, nodegroup=%s", clusterIDOrName, nodegroupIDOrName)
 
-	nodegroup, err := nodegroups.Get(containerInfraClient, clusterIDOrName, nodegroupIDOrName).Extract()
+	nodegroup, err := nodegroups.Get(kubernetesClient, clusterIDOrName, nodegroupIDOrName).Extract()
 	if err != nil {
 		return diag.Errorf("Unable to retrieve NKS nodegroup %s in cluster %s: %s", nodegroupIDOrName, clusterIDOrName, err)
+	}
+
+	if nodegroup == nil {
+		return diag.Errorf("Retrieved NKS nodegroup is nil for %s in cluster %s", nodegroupIDOrName, clusterIDOrName)
 	}
 
 	log.Printf("[DEBUG] Retrieved NKS nodegroup %s: %+v", nodegroupIDOrName, nodegroup)

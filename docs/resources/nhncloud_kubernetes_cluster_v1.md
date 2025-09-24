@@ -61,20 +61,6 @@ resource "nhncloud_kubernetes_cluster_v1" "my_cluster" {
     name    = "coredns"
     version = "1.8.4-nks1"
   }
-
-  # Optional custom headers configuration
-  custom_headers_config {
-    items {
-      header   = "OpenStack-API-Version"
-      value    = "container-infra 1.2"
-      override = true
-    }
-    items {
-      header   = "X-Custom-Auth"
-      value    = "custom-token"
-      override = true
-    }
-  }
 }
 ```
 
@@ -93,7 +79,6 @@ The following arguments are supported:
 * `labels` - (Required) A map of cluster configuration labels. Changing this creates a new cluster.
 * `api_ep_ipacl` - (Optional) API endpoint IP access control configuration. Changing this creates a new cluster.
 * `addons` - (Required) A list of addons to install on the cluster. Changing this creates a new cluster.
-* `custom_headers_config` - (Optional) Custom headers configuration for NKS API requests.
 
 ### Labels Configuration
 
@@ -140,18 +125,6 @@ The `addons` block supports:
 * `name` - (Required) The addon name.
 * `version` - (Required) The addon version.
 * `options` - (Optional) A map of addon-specific options.
-
-### Custom Headers Configuration
-
-The `custom_headers_config` block supports:
-
-* `items` - (Optional) A set of custom header items.
-
-The `items` block supports:
-
-* `header` - (Required) The header name (1-256 characters).
-* `value` - (Required) The header value (1-1024 characters).
-* `override` - (Optional) Whether to override the header if it already exists. Defaults to `true`.
 
 ## Attributes Reference
 

@@ -91,10 +91,13 @@ func resourceNKSNodegroupUpgradeV1() *schema.Resource {
 
 func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
 	nodegroupIDOrName := d.Get("nodegroup_id").(string)
@@ -104,21 +107,42 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 		Version: d.Get("version").(string),
 	}
 
-	// Set upgrade options
+	// Set upgrade options as direct fields instead of nested options object
 	if v, ok := d.GetOk("options"); ok {
 		optionsList := v.([]interface{})
 		if len(optionsList) > 0 {
 			optionsMap := optionsList[0].(map[string]interface{})
-			upgradeOpts.Options = &nodegroups.UpgradeOptions{
-				NumBufferNodes:         optionsMap["num_buffer_nodes"].(int),
-				NumMaxUnavailableNodes: optionsMap["num_max_unavailable_nodes"].(int),
+
+			if numBufferNodes, ok := optionsMap["num_buffer_nodes"].(int); ok {
+				upgradeOpts.NumBufferNodes = numBufferNodes
+			}
+			if numMaxUnavailableNodes, ok := optionsMap["num_max_unavailable_nodes"].(int); ok {
+				upgradeOpts.NumMaxUnavailableNodes = numMaxUnavailableNodes
 			}
 		}
 	}
 
+	log.Printf("[DEBUG] Checking cluster status before upgrading NKS nodegroup %s in cluster %s to version %s", nodegroupIDOrName, clusterIDOrName, upgradeOpts.Version)
+
+	// Wait for cluster to be in a stable state before attempting upgrade
+	clusterStateConf := &resource.StateChangeConf{
+		Pending:    []string{"UPDATE_IN_PROGRESS", "CREATE_IN_PROGRESS"},
+		Target:     []string{"UPDATE_COMPLETE", "CREATE_COMPLETE"},
+		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, clusterIDOrName),
+		Timeout:    10 * time.Minute, // Wait up to 10 minutes for cluster to stabilize
+		Delay:      30 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	log.Printf("[DEBUG] Waiting for cluster %s to be in stable state before nodegroup upgrade", clusterIDOrName)
+	_, err = clusterStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return diag.Errorf("Error waiting for cluster %s to be in stable state before nodegroup upgrade: %s", clusterIDOrName, err)
+	}
+
 	log.Printf("[DEBUG] Upgrading NKS nodegroup %s in cluster %s to version %s", nodegroupIDOrName, clusterIDOrName, upgradeOpts.Version)
 
-	nodegroup, err := nodegroups.Upgrade(containerInfraClient, clusterIDOrName, nodegroupIDOrName, upgradeOpts).Extract()
+	nodegroup, err := nodegroups.Upgrade(kubernetesClient, clusterIDOrName, nodegroupIDOrName, upgradeOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error upgrading NKS nodegroup %s in cluster %s: %s", nodegroupIDOrName, clusterIDOrName, err)
 	}
@@ -130,7 +154,7 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"UPDATE_IN_PROGRESS"},
 		Target:     []string{"UPDATE_COMPLETE"},
-		Refresh:    nksNodegroupV1StateRefreshFunc(containerInfraClient, clusterIDOrName, nodegroup.UUID),
+		Refresh:    nksNodegroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, nodegroup.UUID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      30 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -146,14 +170,17 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 
 func resourceNKSNodegroupUpgradeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud container-infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
+
+	// Set container-infra API microversion to latest for NKS compatibility
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
 
-	nodegroup, err := nodegroups.Get(containerInfraClient, clusterIDOrName, d.Id()).Extract()
+	nodegroup, err := nodegroups.Get(kubernetesClient, clusterIDOrName, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving NKS nodegroup"))
 	}
