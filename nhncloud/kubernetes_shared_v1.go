@@ -16,23 +16,21 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/certificates"
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/nodegroups"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/certificates"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clusters"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clustertemplates"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
 
 const (
 	rsaPrivateKeyBlockType      = "RSA PRIVATE KEY"
 	certificateRequestBlockType = "CERTIFICATE REQUEST"
 
-	containerInfraV1NodeGroupMinMicroversion  = "1.9"
-	containerInfraV1ZeroNodeCountMicroversion = "1.10"
-
-	kubernetesV1NodeGroupMinMicroversion = "latest"
+	kubernetesV1ZeroNodeCountMicroversion = "latest"
+	kubernetesV1NodeGroupMinMicroversion  = "latest"
 )
 
-func expandContainerInfraV1LabelsMap(v map[string]interface{}) (map[string]string, error) {
+func expandKubernetesV1LabelsMap(v map[string]interface{}) (map[string]string, error) {
 	m := make(map[string]string)
 	for key, val := range v {
 		labelValue, ok := val.(string)
@@ -44,7 +42,7 @@ func expandContainerInfraV1LabelsMap(v map[string]interface{}) (map[string]strin
 	return m, nil
 }
 
-func expandContainerInfraV1LabelsString(v map[string]interface{}) (string, error) {
+func expandKubernetesV1LabelsString(v map[string]interface{}) (string, error) {
 	var formattedLabels string
 	for key, val := range v {
 		labelValue, ok := val.(string)
@@ -61,7 +59,7 @@ func expandContainerInfraV1LabelsString(v map[string]interface{}) (string, error
 	return fmt.Sprintf("{%s}", formattedLabels), nil
 }
 
-func containerInfraV1GetLabelsMerged(labelsAdded map[string]string, labelsSkipped map[string]string, labelsOverridden map[string]string, labels map[string]string, resourceDataLabels map[string]string) map[string]string {
+func kubernetesV1GetLabelsMerged(labelsAdded map[string]string, labelsSkipped map[string]string, labelsOverridden map[string]string, labels map[string]string, resourceDataLabels map[string]string) map[string]string {
 	m := make(map[string]string)
 	for key, val := range labelsAdded {
 		m[key] = val
@@ -82,7 +80,7 @@ func containerInfraV1GetLabelsMerged(labelsAdded map[string]string, labelsSkippe
 	return m
 }
 
-func containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts []clustertemplates.UpdateOptsBuilder, attribute string, value interface{}) []clustertemplates.UpdateOptsBuilder {
+func kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts []clustertemplates.UpdateOptsBuilder, attribute string, value interface{}) []clustertemplates.UpdateOptsBuilder {
 	if value == "" {
 		updateOpts = append(updateOpts, clustertemplates.UpdateOpts{
 			Op:   clustertemplates.RemoveOp,
@@ -98,7 +96,7 @@ func containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts []clustertemplat
 	return updateOpts
 }
 
-func containerInfraNodeGroupV1AppendUpdateOpts(updateOpts []nodegroups.UpdateOptsBuilder, attribute string, value int) []nodegroups.UpdateOptsBuilder {
+func kubernetesNodeGroupV1AppendUpdateOpts(updateOpts []nodegroups.UpdateOptsBuilder, attribute string, value int) []nodegroups.UpdateOptsBuilder {
 	if value == 0 && attribute == "max_node_count" {
 		updateOpts = append(updateOpts, nodegroups.UpdateOpts{
 			Op:   nodegroups.RemoveOp,
@@ -114,9 +112,9 @@ func containerInfraNodeGroupV1AppendUpdateOpts(updateOpts []nodegroups.UpdateOpt
 	return updateOpts
 }
 
-// ContainerInfraClusterV1StateRefreshFunc returns a resource.StateRefreshFunc
-// that is used to watch a container infra Cluster.
-func containerInfraClusterV1StateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) resource.StateRefreshFunc {
+// KubernetesClusterV1StateRefreshFunc returns a resource.StateRefreshFunc
+// that is used to watch a NHN Cloud NKS Cluster.
+func kubernetesClusterV1StateRefreshFunc(client *gophercloud.ServiceClient, clusterID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		c, err := clusters.Get(client, clusterID).Extract()
 		if err != nil {
@@ -135,7 +133,7 @@ func containerInfraClusterV1StateRefreshFunc(client *gophercloud.ServiceClient, 
 		}
 		for _, errorStatus := range errorStatuses {
 			if c.Status == errorStatus {
-				err = fmt.Errorf("openstack_containerinfra_cluster_v1 is in an error state: %s", c.StatusReason)
+				err = fmt.Errorf("nhncloud_kubernetes_cluster_v1 is in an error state: %s", c.StatusReason)
 				return c, c.Status, err
 			}
 		}
@@ -144,9 +142,9 @@ func containerInfraClusterV1StateRefreshFunc(client *gophercloud.ServiceClient, 
 	}
 }
 
-// ContainerInfraNodeGroupV1StateRefreshFunc returns a resource.StateRefreshFunc
-// that is used to watch a container infra NodeGroup.
-func containerInfraNodeGroupV1StateRefreshFunc(client *gophercloud.ServiceClient, clusterID string, nodeGroupID string) resource.StateRefreshFunc {
+// KubernetesNodeGroupV1StateRefreshFunc returns a resource.StateRefreshFunc
+// that is used to watch a NHN Cloud NKS NodeGroup.
+func kubernetesNodeGroupV1StateRefreshFunc(client *gophercloud.ServiceClient, clusterID string, nodeGroupID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		nodeGroup, err := nodegroups.Get(client, clusterID, nodeGroupID).Extract()
 		if err != nil {
@@ -165,7 +163,7 @@ func containerInfraNodeGroupV1StateRefreshFunc(client *gophercloud.ServiceClient
 		}
 		for _, errorStatus := range errorStatuses {
 			if nodeGroup.Status == errorStatus {
-				err = fmt.Errorf("openstack_containerinfra_nodegroup_v1 is in an error state: %s", nodeGroup.StatusReason)
+				err = fmt.Errorf("nhncloud_kubernetes_nodegroup_v1 is in an error state: %s", nodeGroup.StatusReason)
 				return nodeGroup, nodeGroup.Status, err
 			}
 		}
@@ -174,10 +172,10 @@ func containerInfraNodeGroupV1StateRefreshFunc(client *gophercloud.ServiceClient
 	}
 }
 
-// containerInfraClusterV1Flavor will determine the flavor for a container infra
+// kubernetesClusterV1Flavor will determine the flavor for a NHN Cloud NKS
 // cluster based on either what was set in the configuration or environment
 // variable.
-func containerInfraClusterV1Flavor(d *schema.ResourceData) (string, error) {
+func kubernetesClusterV1Flavor(d *schema.ResourceData) (string, error) {
 	if flavor := d.Get("flavor").(string); flavor != "" {
 		return flavor, nil
 	}
@@ -189,10 +187,10 @@ func containerInfraClusterV1Flavor(d *schema.ResourceData) (string, error) {
 	return "", nil
 }
 
-// containerInfraClusterV1Flavor will determine the master flavor for a
-// container infra cluster based on either what was set in the configuration
+// kubernetesClusterV1MasterFlavor will determine the master flavor for a
+// NHN Cloud NKS cluster based on either what was set in the configuration
 // or environment variable.
-func containerInfraClusterV1MasterFlavor(d *schema.ResourceData) (string, error) {
+func kubernetesClusterV1MasterFlavor(d *schema.ResourceData) (string, error) {
 	if flavor := d.Get("master_flavor").(string); flavor != "" {
 		return flavor, nil
 	}
@@ -242,13 +240,13 @@ type kubernetesConfigUserData struct {
 	ClientCertificateData string `yaml:"client-certificate-data"`
 }
 
-func flattenContainerInfraV1Kubeconfig(d *schema.ResourceData, containerInfraClient *gophercloud.ServiceClient) (map[string]interface{}, error) {
+func flattenKubernetesV1Kubeconfig(d *schema.ResourceData, kubernetesClient *gophercloud.ServiceClient) (map[string]interface{}, error) {
 	clientSert, ok := d.Get("kubeconfig.client_certificate").(string)
 	if ok && clientSert != "" {
 		return d.Get("kubeconfig").(map[string]interface{}), nil
 	}
 
-	certificateAuthority, err := certificates.Get(containerInfraClient, d.Id()).Extract()
+	certificateAuthority, err := certificates.Get(kubernetesClient, d.Id()).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("Error getting certificate authority: %s", err)
 	}
@@ -292,7 +290,7 @@ func flattenContainerInfraV1Kubeconfig(d *schema.ResourceData, containerInfraCli
 		CSR:         string(pemClientCsr),
 	}
 
-	clientCertificate, err := certificates.Create(containerInfraClient, certificateCreateOpts).Extract()
+	clientCertificate, err := certificates.Create(kubernetesClient, certificateCreateOpts).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("Error requesting client certificate: %s", err)
 	}
@@ -312,7 +310,6 @@ func flattenContainerInfraV1Kubeconfig(d *schema.ResourceData, containerInfraCli
 		"client_key":             string(pemClientKey),
 	}, nil
 }
-
 func renderKubeconfig(name string, host string, clusterCaCertificate []byte, clientCertificate []byte, clientKey []byte) ([]byte, error) {
 	userName := fmt.Sprintf("%s-admin", name)
 

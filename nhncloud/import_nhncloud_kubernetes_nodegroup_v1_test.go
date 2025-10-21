@@ -7,11 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccContainerInfraV1ClusterImport_basic(t *testing.T) {
-	resourceName := "openstack_containerinfra_cluster_v1.cluster_1"
+func TestAccKubernetesV1NodeGroupImport_basic(t *testing.T) {
+	resourceName := "nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
+	nodeGroupName := acctest.RandomWithPrefix("tf-acc-cluster")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -20,72 +21,73 @@ func TestAccContainerInfraV1ClusterImport_basic(t *testing.T) {
 			testAccPreCheckContainerInfra(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1ClusterDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1NodeGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1ClusterBasic(keypairName, clusterTemplateName, clusterName, 1),
+				Config: testAccKubernetesV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"kubeconfig"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func TestAccContainerInfraV1ClusterImport_mergeLabels(t *testing.T) {
-	resourceName := "openstack_containerinfra_cluster_v1.cluster_1"
+func TestAccKubernetesV1NodeGroupImport_mergeLabels(t *testing.T) {
+	resourceName := "nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
+	nodeGroupName := acctest.RandomWithPrefix("tf-acc-cluster")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccPreCheckNonAdminOnly(t)
-			testAccPreCheckContainerInfra(t)
+			testAccPreCheckKubernetes(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1ClusterDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1NodeGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1ClusterLabels(keypairName, clusterTemplateName, clusterName, 1, true),
+				Config: testAccKubernetesV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 			},
 			{
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"kubeconfig", "merge_labels", "labels"},
+				ImportStateVerifyIgnore: []string{"merge_labels", "labels"},
 			},
 		},
 	})
 }
 
-func TestAccContainerInfraV1ClusterImport_overrideLabels(t *testing.T) {
-	resourceName := "openstack_containerinfra_cluster_v1.cluster_1"
+func TestAccKubernetesV1NodeGroupImport_overrideLabels(t *testing.T) {
+	resourceName := "nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
+	nodeGroupName := acctest.RandomWithPrefix("tf-acc-cluster")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccPreCheckNonAdminOnly(t)
-			testAccPreCheckContainerInfra(t)
+			testAccPreCheckKubernetes(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1ClusterDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1NodeGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1ClusterLabels(keypairName, clusterTemplateName, clusterName, 1, false),
+				Config: testAccKubernetesV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 			},
 			{
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"kubeconfig", "merge_labels", "labels"},
+				ImportStateVerifyIgnore: []string{"merge_labels", "labels"},
 			},
 		},
 	})

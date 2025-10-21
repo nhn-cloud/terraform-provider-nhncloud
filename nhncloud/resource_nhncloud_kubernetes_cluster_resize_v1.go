@@ -9,14 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/nks/v1/clusters"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clusters"
 )
 
-func resourceNKSClusterResizeV1() *schema.Resource {
+func resourceKubernetesClusterResizeV1() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNKSClusterResizeV1Create,
-		ReadContext:   resourceNKSClusterResizeV1Read,
-		DeleteContext: resourceNKSClusterResizeV1Delete,
+		CreateContext: resourceKubernetesClusterResizeV1Create,
+		ReadContext:   resourceKubernetesClusterResizeV1Read,
+		DeleteContext: resourceKubernetesClusterResizeV1Delete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -56,18 +56,7 @@ func resourceNKSClusterResizeV1() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
-			// computed-only
 			"uuid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"resized_at": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -75,34 +64,34 @@ func resourceNKSClusterResizeV1() *schema.Resource {
 	}
 }
 
-func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesClusterResizeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
 		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
 	}
 
-	// Set container-infra API microversion to latest for NKS compatibility
 	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
 
 	// Build resize options
 	resizeOpts := clusters.ResizeOpts{
-		NodeCount: d.Get("node_count").(int),
 		NodeGroup: d.Get("nodegroup_id").(string),
 	}
 
-	// Set resize options
-	if v, ok := d.GetOk("nodes_to_remove"); ok {
-		nodeList := v.([]interface{})
-		resizeOpts.Options = &clusters.ResizeOptions{
-			NodesToRemove: make([]string, len(nodeList)),
-		}
-		for i, node := range nodeList {
-			resizeOpts.Options.NodesToRemove[i] = node.(string)
+	if v, ok := d.GetOk("node_count"); ok {
+		nodeCount := v.(int)
+		resizeOpts.NodeCount = &nodeCount
+	}
+
+	var nodesToRemove []string
+	if raw, ok := d.GetOk("nodes_to_remove"); ok {
+		for _, v := range raw.([]interface{}) {
+			nodesToRemove = append(nodesToRemove, v.(string))
 		}
 	}
+	resizeOpts.NodesToRemove = nodesToRemove
 
 	log.Printf("[DEBUG] Resizing NKS cluster %s to %d nodes", clusterIDOrName, resizeOpts.NodeCount)
 
@@ -118,7 +107,7 @@ func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceDat
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"UPDATE_IN_PROGRESS"},
 		Target:     []string{"UPDATE_COMPLETE"},
-		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, cluster.UUID),
+		Refresh:    kubernetesClusterV1StateRefreshFunc(kubernetesClient, cluster.UUID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      30 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -129,10 +118,10 @@ func resourceNKSClusterResizeV1Create(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("Error waiting for NKS cluster %s resize to complete: %s", cluster.UUID, err)
 	}
 
-	return resourceNKSClusterResizeV1Read(ctx, d, meta)
+	return resourceKubernetesClusterResizeV1Read(ctx, d, meta)
 }
 
-func resourceNKSClusterResizeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesClusterResizeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
@@ -157,8 +146,7 @@ func resourceNKSClusterResizeV1Read(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceNKSClusterResizeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This is a one-time operation resource, so delete just removes it from state
+func resourceKubernetesClusterResizeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] Removing NKS cluster resize resource %s from state", d.Id())
 	return nil
 }

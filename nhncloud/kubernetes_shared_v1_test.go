@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clustertemplates"
 )
 
-func TestUnitExpandContainerInfraV1LabelsMap(t *testing.T) {
+func TestUnitExpandKubernetesV1LabelsMap(t *testing.T) {
 	labels := map[string]interface{}{
 		"foo": "bar",
 		"bar": "baz",
@@ -19,12 +19,12 @@ func TestUnitExpandContainerInfraV1LabelsMap(t *testing.T) {
 		"bar": "baz",
 	}
 
-	actualLabels, err := expandContainerInfraV1LabelsMap(labels)
+	actualLabels, err := expandKubernetesV1LabelsMap(labels)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, expectedLabels, actualLabels)
 }
 
-func TestUnitExpandContainerInfraV1LabelsString(t *testing.T) {
+func TestUnitExpandKubernetesV1LabelsString(t *testing.T) {
 	labels := map[string]interface{}{
 		"foo": "bar",
 		"bar": "baz",
@@ -33,7 +33,7 @@ func TestUnitExpandContainerInfraV1LabelsString(t *testing.T) {
 	expectedLabels1 := "{'foo':'bar','bar':'baz'}"
 	expectedLabels2 := "{'bar':'baz','foo':'bar'}"
 
-	actualLabels, err := expandContainerInfraV1LabelsString(labels)
+	actualLabels, err := expandKubernetesV1LabelsString(labels)
 	assert.Equal(t, err, nil)
 
 	if actualLabels != expectedLabels1 && actualLabels != expectedLabels2 {
@@ -42,7 +42,7 @@ func TestUnitExpandContainerInfraV1LabelsString(t *testing.T) {
 	}
 }
 
-func TestUnitContainerInfraClusterTemplateV1AppendUpdateOpts(t *testing.T) {
+func TestUnitKubernetesClusterTemplateV1AppendUpdateOpts(t *testing.T) {
 	actualUpdateOpts := []clustertemplates.UpdateOptsBuilder{}
 
 	expectedUpdateOpts := []clustertemplates.UpdateOptsBuilder{
@@ -58,10 +58,10 @@ func TestUnitContainerInfraClusterTemplateV1AppendUpdateOpts(t *testing.T) {
 		},
 	}
 
-	actualUpdateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+	actualUpdateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 		actualUpdateOpts, "master_lb_enabled", "True")
 
-	actualUpdateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+	actualUpdateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 		actualUpdateOpts, "registry_enabled", "True")
 
 	assert.Equal(t, expectedUpdateOpts, actualUpdateOpts)

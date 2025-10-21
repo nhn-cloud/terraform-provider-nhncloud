@@ -9,14 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/nks/v1/nodegroups"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
 
-func resourceNKSNodegroupUpgradeV1() *schema.Resource {
+func resourceKubernetesNodegroupUpgradeV1() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNKSNodegroupUpgradeV1Create,
-		ReadContext:   resourceNKSNodegroupUpgradeV1Read,
-		DeleteContext: resourceNKSNodegroupUpgradeV1Delete,
+		CreateContext: resourceKubernetesNodegroupUpgradeV1Create,
+		ReadContext:   resourceKubernetesNodegroupUpgradeV1Read,
+		DeleteContext: resourceKubernetesNodegroupUpgradeV1Delete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -68,21 +68,11 @@ func resourceNKSNodegroupUpgradeV1() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
-			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"upgraded_at": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 	}
 }
 
-func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesNodegroupUpgradeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
@@ -114,7 +104,7 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 	clusterStateConf := &resource.StateChangeConf{
 		Pending:    []string{"UPDATE_IN_PROGRESS", "CREATE_IN_PROGRESS"},
 		Target:     []string{"UPDATE_COMPLETE", "CREATE_COMPLETE"},
-		Refresh:    nksClusterV1StateRefreshFunc(kubernetesClient, clusterIDOrName),
+		Refresh:    kubernetesClusterV1StateRefreshFunc(kubernetesClient, clusterIDOrName),
 		Timeout:    10 * time.Minute, // Wait up to 10 minutes for cluster to stabilize
 		Delay:      30 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -140,7 +130,7 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"UPDATE_IN_PROGRESS"},
 		Target:     []string{"UPDATE_COMPLETE"},
-		Refresh:    nksNodegroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, nodegroup.UUID),
+		Refresh:    kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, nodegroup.UUID),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      30 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -151,10 +141,10 @@ func resourceNKSNodegroupUpgradeV1Create(ctx context.Context, d *schema.Resource
 		return diag.Errorf("Error waiting for NKS nodegroup %s upgrade to complete: %s", nodegroup.UUID, err)
 	}
 
-	return resourceNKSNodegroupUpgradeV1Read(ctx, d, meta)
+	return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
 }
 
-func resourceNKSNodegroupUpgradeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesNodegroupUpgradeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
@@ -181,7 +171,7 @@ func resourceNKSNodegroupUpgradeV1Read(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceNKSNodegroupUpgradeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesNodegroupUpgradeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This is a one-time operation resource, so delete just removes it from state
 	log.Printf("[DEBUG] Removing NKS nodegroup upgrade resource %s from state", d.Id())
 	return nil

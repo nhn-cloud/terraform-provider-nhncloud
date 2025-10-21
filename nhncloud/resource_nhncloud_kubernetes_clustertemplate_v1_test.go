@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clustertemplates"
 )
 
-func TestAccContainerInfraV1ClusterTemplate_basic(t *testing.T) {
+func TestAccKubernetesV1ClusterTemplate_basic(t *testing.T) {
 	var clusterTemplate clustertemplates.ClusterTemplate
 
-	resourceName := "openstack_containerinfra_clustertemplate_v1.clustertemplate_1"
+	resourceName := "nhncloud_kubernetes_clustertemplate_v1.clustertemplate_1"
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
 
 	resource.Test(t, resource.TestCase{
@@ -24,12 +24,12 @@ func TestAccContainerInfraV1ClusterTemplate_basic(t *testing.T) {
 			testAccPreCheckContainerInfra(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1ClusterTemplateDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1ClusterTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1ClusterTemplateBasic(clusterTemplateName),
+				Config: testAccKubernetesV1ClusterTemplateBasic(clusterTemplateName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1ClusterTemplateExists(resourceName, &clusterTemplate),
+					testAccCheckKubernetesV1ClusterTemplateExists(resourceName, &clusterTemplate),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttr(resourceName, "name", clusterTemplateName),
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
@@ -69,7 +69,7 @@ func TestAccContainerInfraV1ClusterTemplate_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccContainerInfraV1ClusterTemplateUpdate(clusterTemplateName),
+				Config: testAccKubernetesV1ClusterTemplateUpdate(clusterTemplateName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttr(resourceName, "name", clusterTemplateName+"-updated"),
@@ -113,7 +113,7 @@ func TestAccContainerInfraV1ClusterTemplate_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckContainerInfraV1ClusterTemplateExists(n string, clustertemplate *clustertemplates.ClusterTemplate) resource.TestCheckFunc {
+func testAccCheckKubernetesV1ClusterTemplateExists(n string, clustertemplate *clustertemplates.ClusterTemplate) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -125,12 +125,12 @@ func testAccCheckContainerInfraV1ClusterTemplateExists(n string, clustertemplate
 		}
 
 		config := testAccProvider.Meta().(*Config)
-		containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
+		kubernetesClient, err := config.ContainerInfraV1Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack container infra client: %s", err)
+			return fmt.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 		}
 
-		found, err := clustertemplates.Get(containerInfraClient, rs.Primary.ID).Extract()
+		found, err := clustertemplates.Get(kubernetesClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}
@@ -145,19 +145,19 @@ func testAccCheckContainerInfraV1ClusterTemplateExists(n string, clustertemplate
 	}
 }
 
-func testAccCheckContainerInfraV1ClusterTemplateDestroy(s *terraform.State) error {
+func testAccCheckKubernetesV1ClusterTemplateDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
+	kubernetesClient, err := config.ContainerInfraV1Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack container infra client: %s", err)
+		return fmt.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openstack_containerinfra_clustertemplate_v1" {
+		if rs.Type != "nhncloud_kubernetes_clustertemplate_v1" {
 			continue
 		}
 
-		_, err := clustertemplates.Get(containerInfraClient, rs.Primary.ID).Extract()
+		_, err := clustertemplates.Get(kubernetesClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Cluster template still exists")
 		}
@@ -166,9 +166,9 @@ func testAccCheckContainerInfraV1ClusterTemplateDestroy(s *terraform.State) erro
 	return nil
 }
 
-func testAccContainerInfraV1ClusterTemplateBasic(clusterTemplateName string) string {
+func testAccKubernetesV1ClusterTemplateBasic(clusterTemplateName string) string {
 	return fmt.Sprintf(`
-resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
+resource "nhncloud_kubernetes_clustertemplate_v1" "clustertemplate_1" {
   region                = "%s"
   name                  = "%s"
   apiserver_port        = "8888"
@@ -205,9 +205,9 @@ resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
 `, osRegionName, clusterTemplateName, osExtGwID, osMagnumFlavor, osMagnumFlavor, osMagnumHTTPProxy, osMagnumHTTPSProxy, osMagnumImage, osMagnumNoProxy)
 }
 
-func testAccContainerInfraV1ClusterTemplateUpdate(clusterTemplateName string) string {
+func testAccKubernetesV1ClusterTemplateUpdate(clusterTemplateName string) string {
 	return fmt.Sprintf(`
-resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
+resource "nhncloud_kubernetes_clustertemplate_v1" "clustertemplate_1" {
   region                = "%s"
   name                  = "%s-updated"
   apiserver_port        = "8080"
