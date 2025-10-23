@@ -7,7 +7,7 @@ require (
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.32.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/nhn-cloud/nhncloud.gophercloud v1.0.10-dev8
+	github.com/nhn-cloud/nhncloud.gophercloud v1.0.10-dev9
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -64,5 +64,3 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/nhn-cloud/nhncloud.gophercloud => ../nhncloud.gophercloud
