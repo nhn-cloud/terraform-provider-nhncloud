@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccContainerInfraV1NodeGroupDataSource_basic(t *testing.T) {
-	resourceName := "data.openstack_containerinfra_nodegroup_v1.nodegroup_1"
+func TestAccKubernetesV1NodeGroupDataSource_basic(t *testing.T) {
+	resourceName := "data.nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	nodeGroupName := acctest.RandomWithPrefix("tf-acc-nodegroup")
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
@@ -19,20 +19,20 @@ func TestAccContainerInfraV1NodeGroupDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheckNonAdminOnly(t)
-			testAccPreCheckContainerInfra(t)
+			testAccPreCheckKubernetes(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1ClusterDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1ClusterDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
+				Config: testAccKubernetesV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 			},
 			{
-				Config: testAccContainerInfraV1NodeGroupDataSourceBasic(
-					testAccContainerInfraV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
+				Config: testAccKubernetesV1NodeGroupDataSourceBasic(
+					testAccKubernetesV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupDataSourceID(resourceName),
+					testAccCheckKubernetesV1NodeGroupDataSourceID(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -53,7 +53,7 @@ func TestAccContainerInfraV1NodeGroupDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckContainerInfraV1NodeGroupDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckKubernetesV1NodeGroupDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ct, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -68,13 +68,13 @@ func testAccCheckContainerInfraV1NodeGroupDataSourceID(n string) resource.TestCh
 	}
 }
 
-func testAccContainerInfraV1NodeGroupDataSourceBasic(nodeGroupResource string) string {
+func testAccKubernetesV1NodeGroupDataSourceBasic(nodeGroupResource string) string {
 	return fmt.Sprintf(`
 %s
 
-data "openstack_containerinfra_nodegroup_v1" "nodegroup_1" {
-  cluster_id = "${openstack_containerinfra_cluster_v1.cluster_1.name}"
-  name = "${openstack_containerinfra_nodegroup_v1.nodegroup_1.name}"
+data "nhncloud_kubernetes_nodegroup_v1" "nodegroup_1" {
+  cluster_id = "${nhncloud_kubernetes_cluster_v1.cluster_1.name}"
+  name = "${nhncloud_kubernetes_nodegroup_v1.nodegroup_1.name}"
 }
 `, nodeGroupResource)
 }

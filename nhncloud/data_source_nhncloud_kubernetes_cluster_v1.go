@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clusters"
 )
 
-func dataSourceContainerInfraCluster() *schema.Resource {
+func dataSourceKubernetesCluster() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceContainerInfraClusterRead,
+		ReadContext: dataSourceKubernetesClusterRead,
 		Schema: map[string]*schema.Schema{
 			"region": {
 				Type:     schema.TypeString,
@@ -22,8 +22,17 @@ func dataSourceContainerInfraCluster() *schema.Resource {
 			},
 
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"name", "uuid"},
+			},
+
+			"uuid": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"name", "uuid"},
 			},
 
 			"project_id": {
@@ -81,16 +90,6 @@ func dataSourceContainerInfraCluster() *schema.Resource {
 				Computed: true,
 			},
 
-			"flavor": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"master_flavor": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"keypair": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -101,20 +100,9 @@ func dataSourceContainerInfraCluster() *schema.Resource {
 				Computed: true,
 			},
 
-			"master_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-
 			"node_count": {
 				Type:     schema.TypeInt,
 				Computed: true,
-			},
-
-			"master_addresses": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
 			"node_addresses": {
@@ -138,25 +126,65 @@ func dataSourceContainerInfraCluster() *schema.Resource {
 				Computed: true,
 			},
 
-			"floating_ip_enabled": {
-				Type:     schema.TypeBool,
+			"flavor_id": {
+				Type:     schema.TypeString,
 				Computed: true,
+			},
+
+			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"status_reason": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"addons": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"version": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"options": {
+							Type:     schema.TypeMap,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
-func dataSourceContainerInfraClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack container infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
-	name := d.Get("name").(string)
-	c, err := clusters.Get(containerInfraClient, name).Extract()
+	var clusterIDOrName string
+	if uuid, ok := d.GetOk("uuid"); ok {
+		clusterIDOrName = uuid.(string)
+	} else if name, ok := d.GetOk("name"); ok {
+		clusterIDOrName = name.(string)
+	} else {
+		return diag.Errorf("Either 'uuid' or 'name' must be specified")
+	}
+
+	c, err := clusters.Get(kubernetesClient, clusterIDOrName).Extract()
 	if err != nil {
-		return diag.Errorf("Error getting openstack_containerinfra_cluster_v1 %s: %s", name, err)
+		return diag.Errorf("Error getting nhncloud_kubernetes_cluster_v1 %s: %s", clusterIDOrName, err)
 	}
 
 	d.SetId(c.UUID)
@@ -168,28 +196,30 @@ func dataSourceContainerInfraClusterRead(ctx context.Context, d *schema.Resource
 	d.Set("cluster_template_id", c.ClusterTemplateID)
 	d.Set("container_version", c.ContainerVersion)
 	d.Set("create_timeout", c.CreateTimeout)
-	d.Set("discovery_url", c.DiscoveryURL)
 	d.Set("docker_volume_size", c.DockerVolumeSize)
 	d.Set("flavor", c.FlavorID)
-	d.Set("master_flavor", c.MasterFlavorID)
 	d.Set("keypair", c.KeyPair)
-	d.Set("master_count", c.MasterCount)
 	d.Set("node_count", c.NodeCount)
-	d.Set("master_addresses", c.MasterAddresses)
 	d.Set("node_addresses", c.NodeAddresses)
 	d.Set("stack_id", c.StackID)
 	d.Set("fixed_network", c.FixedNetwork)
 	d.Set("fixed_subnet", c.FixedSubnet)
-	d.Set("floating_ip_enabled", c.FloatingIPEnabled)
+	d.Set("flavor_id", c.FlavorID)
+	d.Set("uuid", c.UUID)
+	d.Set("name", c.Name)
+	d.Set("status", c.Status)
+	d.Set("status_reason", c.StatusReason)
+
+	// TODO: Set api_ep_ipacl and addons when the structure is available in gophercloud
 
 	if err := d.Set("labels", c.Labels); err != nil {
-		log.Printf("[DEBUG] Unable to set labels for openstack_containerinfra_cluster_v1 %s: %s", c.UUID, err)
+		log.Printf("[DEBUG] Unable to set labels for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
 	}
 	if err := d.Set("created_at", c.CreatedAt.Format(time.RFC3339)); err != nil {
-		log.Printf("[DEBUG] Unable to set created_at for openstack_containerinfra_cluster_v1 %s: %s", c.UUID, err)
+		log.Printf("[DEBUG] Unable to set created_at for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
 	}
 	if err := d.Set("updated_at", c.UpdatedAt.Format(time.RFC3339)); err != nil {
-		log.Printf("[DEBUG] Unable to set updated_at for openstack_containerinfra_cluster_v1 %s: %s", c.UUID, err)
+		log.Printf("[DEBUG] Unable to set updated_at for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
 	}
 
 	d.Set("region", GetRegion(d, config))

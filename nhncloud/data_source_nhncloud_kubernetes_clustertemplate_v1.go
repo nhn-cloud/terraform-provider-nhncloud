@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clustertemplates"
 )
 
-func dataSourceContainerInfraClusterTemplateV1() *schema.Resource {
+func dataSourceKubernetesClusterTemplateV1() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceContainerInfraClusterTemplateV1Read,
+		ReadContext: dataSourceKubernetesClusterTemplateV1Read,
 		Schema: map[string]*schema.Schema{
 			"region": {
 				Type:     schema.TypeString,
@@ -184,17 +184,17 @@ func dataSourceContainerInfraClusterTemplateV1() *schema.Resource {
 	}
 }
 
-func dataSourceContainerInfraClusterTemplateV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceKubernetesClusterTemplateV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack container infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
 	name := d.Get("name").(string)
-	ct, err := clustertemplates.Get(containerInfraClient, name).Extract()
+	ct, err := clustertemplates.Get(kubernetesClient, name).Extract()
 	if err != nil {
-		return diag.Errorf("Error getting openstack_containerinfra_clustertemplate_v1 %s: %s", name, err)
+		return diag.Errorf("Error getting nhncloud_kubernetes_clustertemplate_v1 %s: %s", name, err)
 	}
 
 	d.SetId(ct.UUID)
@@ -230,10 +230,10 @@ func dataSourceContainerInfraClusterTemplateV1Read(ctx context.Context, d *schem
 	d.Set("hidden", ct.Hidden)
 
 	if err := d.Set("created_at", ct.CreatedAt.Format(time.RFC3339)); err != nil {
-		log.Printf("[DEBUG] Unable to set openstack_containerinfra_clustertemplate_v1 created_at: %s", err)
+		log.Printf("[DEBUG] Unable to set nhncloud_kubernetes_clustertemplate_v1 created_at: %s", err)
 	}
 	if err := d.Set("updated_at", ct.UpdatedAt.Format(time.RFC3339)); err != nil {
-		log.Printf("[DEBUG] Unable to set openstack_containerinfra_clustertemplate_v1 updated_at: %s", err)
+		log.Printf("[DEBUG] Unable to set nhncloud_kubernetes_clustertemplate_v1 updated_at: %s", err)
 	}
 
 	d.Set("region", GetRegion(d, config))

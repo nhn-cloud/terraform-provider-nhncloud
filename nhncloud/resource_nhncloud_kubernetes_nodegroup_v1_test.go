@@ -9,13 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/nodegroups"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
 
-func TestAccContainerInfraV1NodeGroup_basic(t *testing.T) {
-	var nodeGroup nodegroups.NodeGroup
+func TestAccKubernetesV1NodeGroup_basic(t *testing.T) {
+	var nodeGroup nodegroups.Nodegroup
 
-	resourceName := "openstack_containerinfra_nodegroup_v1.nodegroup_1"
+	resourceName := "nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
@@ -25,15 +25,15 @@ func TestAccContainerInfraV1NodeGroup_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccPreCheckNonAdminOnly(t)
-			testAccPreCheckContainerInfra(t)
+			testAccPreCheckKubernetes(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1NodeGroupDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1NodeGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
+				Config: testAccKubernetesV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupExists(resourceName, &nodeGroup),
+					testAccCheckKubernetesV1NodeGroupExists(resourceName, &nodeGroup),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -52,9 +52,9 @@ func TestAccContainerInfraV1NodeGroup_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccContainerInfraV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 2),
+				Config: testAccKubernetesV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName, nodeGroupName, 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupExists(resourceName, &nodeGroup),
+					testAccCheckKubernetesV1NodeGroupExists(resourceName, &nodeGroup),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -76,10 +76,10 @@ func TestAccContainerInfraV1NodeGroup_basic(t *testing.T) {
 	})
 }
 
-func TestAccContainerInfraV1NodeGroup_mergeLabels(t *testing.T) {
-	var nodeGroup nodegroups.NodeGroup
+func TestAccKubernetesV1NodeGroup_mergeLabels(t *testing.T) {
+	var nodeGroup nodegroups.Nodegroup
 
-	resourceName := "openstack_containerinfra_nodegroup_v1.nodegroup_1"
+	resourceName := "nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
@@ -89,15 +89,15 @@ func TestAccContainerInfraV1NodeGroup_mergeLabels(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccPreCheckNonAdminOnly(t)
-			testAccPreCheckContainerInfra(t)
+			testAccPreCheckKubernetes(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1NodeGroupDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1NodeGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
+				Config: testAccKubernetesV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupExists(resourceName, &nodeGroup),
+					testAccCheckKubernetesV1NodeGroupExists(resourceName, &nodeGroup),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -117,9 +117,9 @@ func TestAccContainerInfraV1NodeGroup_mergeLabels(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccContainerInfraV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 2),
+				Config: testAccKubernetesV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupExists(resourceName, &nodeGroup),
+					testAccCheckKubernetesV1NodeGroupExists(resourceName, &nodeGroup),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -142,10 +142,10 @@ func TestAccContainerInfraV1NodeGroup_mergeLabels(t *testing.T) {
 	})
 }
 
-func TestAccContainerInfraV1NodeGroup_overrideLabels(t *testing.T) {
-	var nodeGroup nodegroups.NodeGroup
+func TestAccKubernetesV1NodeGroup_overrideLabels(t *testing.T) {
+	var nodeGroup nodegroups.Nodegroup
 
-	resourceName := "openstack_containerinfra_nodegroup_v1.nodegroup_1"
+	resourceName := "nhncloud_kubernetes_nodegroup_v1.nodegroup_1"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster")
 	keypairName := acctest.RandomWithPrefix("tf-acc-keypair")
 	clusterTemplateName := acctest.RandomWithPrefix("tf-acc-clustertemplate")
@@ -155,15 +155,15 @@ func TestAccContainerInfraV1NodeGroup_overrideLabels(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccPreCheckNonAdminOnly(t)
-			testAccPreCheckContainerInfra(t)
+			testAccPreCheckKubernetes(t)
 		},
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckContainerInfraV1NodeGroupDestroy,
+		CheckDestroy:      testAccCheckKubernetesV1NodeGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerInfraV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
+				Config: testAccKubernetesV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupExists(resourceName, &nodeGroup),
+					testAccCheckKubernetesV1NodeGroupExists(resourceName, &nodeGroup),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -183,9 +183,9 @@ func TestAccContainerInfraV1NodeGroup_overrideLabels(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccContainerInfraV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 2),
+				Config: testAccKubernetesV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName, nodeGroupName, 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckContainerInfraV1NodeGroupExists(resourceName, &nodeGroup),
+					testAccCheckKubernetesV1NodeGroupExists(resourceName, &nodeGroup),
 					resource.TestCheckResourceAttr(resourceName, "region", osRegionName),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
 					resource.TestCheckResourceAttr(resourceName, "name", nodeGroupName),
@@ -208,7 +208,7 @@ func TestAccContainerInfraV1NodeGroup_overrideLabels(t *testing.T) {
 	})
 }
 
-func testAccCheckContainerInfraV1NodeGroupExists(n string, nodeGroup *nodegroups.NodeGroup) resource.TestCheckFunc {
+func testAccCheckKubernetesV1NodeGroupExists(n string, nodeGroup *nodegroups.Nodegroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -220,17 +220,17 @@ func testAccCheckContainerInfraV1NodeGroupExists(n string, nodeGroup *nodegroups
 		}
 
 		config := testAccProvider.Meta().(*Config)
-		containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
+		kubernetesClient, err := config.ContainerInfraV1Client(osRegionName)
 		if err != nil {
-			return fmt.Errorf("Error creating OpenStack container infra client: %s", err)
+			return fmt.Errorf("Error creating NHN Cloud container infra client: %s", err)
 		}
 
-		containerInfraClient.Microversion = containerInfraV1NodeGroupMinMicroversion
+		kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 		clusterID, nodeGroupID, err := parseNodeGroupID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		found, err := nodegroups.Get(containerInfraClient, clusterID, nodeGroupID).Extract()
+		found, err := nodegroups.Get(kubernetesClient, clusterID, nodeGroupID).Extract()
 		if err != nil {
 			return err
 		}
@@ -245,17 +245,17 @@ func testAccCheckContainerInfraV1NodeGroupExists(n string, nodeGroup *nodegroups
 	}
 }
 
-func testAccCheckContainerInfraV1NodeGroupDestroy(s *terraform.State) error {
+func testAccCheckKubernetesV1NodeGroupDestroy(s *terraform.State) error {
 	config := testAccProvider.Meta().(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(osRegionName)
+	kubernetesClient, err := config.ContainerInfraV1Client(osRegionName)
 	if err != nil {
-		return fmt.Errorf("Error creating OpenStack container infra client: %s", err)
+		return fmt.Errorf("Error creating NHN Cloud container infra client: %s", err)
 	}
 
-	containerInfraClient.Microversion = containerInfraV1NodeGroupMinMicroversion
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "openstack_containerinfra_nodegroup_v1" {
+		if rs.Type != "nhncloud_kubernetes_nodegroup_v1" {
 			continue
 		}
 		clusterID, nodeGroupID, err := parseVolumeTypeAccessID(rs.Primary.ID)
@@ -263,7 +263,7 @@ func testAccCheckContainerInfraV1NodeGroupDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = nodegroups.Get(containerInfraClient, clusterID, nodeGroupID).Extract()
+		_, err = nodegroups.Get(kubernetesClient, clusterID, nodeGroupID).Extract()
 		if err == nil {
 			return fmt.Errorf("node group still exists")
 		}
@@ -272,13 +272,13 @@ func testAccCheckContainerInfraV1NodeGroupDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccContainerInfraV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName string, nodeGroupName string, nodeCount int) string {
+func testAccKubernetesV1NodeGroupBasic(keypairName, clusterTemplateName, clusterName string, nodeGroupName string, nodeCount int) string {
 	return fmt.Sprintf(`
-resource "openstack_compute_keypair_v2" "keypair_1" {
+resource "nhncloud_compute_keypair_v2" "keypair_1" {
   name = "%s"
 }
 
-resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
+resource "nhncloud_kubernetes_clustertemplate_v1" "clustertemplate_1" {
   name                  = "%s"
   image                 = "%s"
   coe                   = "kubernetes"
@@ -299,17 +299,17 @@ resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
   }
 }
 
-resource "openstack_containerinfra_cluster_v1" "cluster_1" {
+resource "nhncloud_kubernetes_cluster_v1" "cluster_1" {
   name                 = "%s"
-  cluster_template_id  = "${openstack_containerinfra_clustertemplate_v1.clustertemplate_1.id}"
+  cluster_template_id  = "${nhncloud_kubernetes_clustertemplate_v1.clustertemplate_1.id}"
   master_count         = 1
   node_count           = 1
-  keypair              = "${openstack_compute_keypair_v2.keypair_1.name}"
+  keypair              = "${nhncloud_compute_keypair_v2.keypair_1.name}"
 }
 
-resource "openstack_containerinfra_nodegroup_v1" "nodegroup_1" {
+resource "nhncloud_kubernetes_nodegroup_v1" "nodegroup_1" {
   name                 = "%s"
-  cluster_id           = "${openstack_containerinfra_cluster_v1.cluster_1.id}"
+  cluster_id           = "${nhncloud_kubernetes_cluster_v1.cluster_1.id}"
   node_count           = %d
   docker_volume_size   = 10
   role				   = "myRole"
@@ -321,13 +321,13 @@ resource "openstack_containerinfra_nodegroup_v1" "nodegroup_1" {
 `, keypairName, clusterTemplateName, osMagnumImage, osMagnumFlavor, osMagnumFlavor, osExtGwID, osMagnumHTTPProxy, osMagnumHTTPSProxy, osMagnumNoProxy, osMagnumLabels, clusterName, nodeGroupName, nodeCount, osMagnumImage, osMagnumFlavor)
 }
 
-func testAccContainerInfraV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName string, nodeGroupName string, nodeCount int) string {
+func testAccKubernetesV1NodeGroupMergeLabels(keypairName, clusterTemplateName, clusterName string, nodeGroupName string, nodeCount int) string {
 	return fmt.Sprintf(`
-resource "openstack_compute_keypair_v2" "keypair_1" {
+resource "nhncloud_compute_keypair_v2" "keypair_1" {
   name = "%s"
 }
 
-resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
+resource "nhncloud_kubernetes_clustertemplate_v1" "clustertemplate_1" {
   name                  = "%s"
   image                 = "%s"
   coe                   = "kubernetes"
@@ -348,17 +348,17 @@ resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
   }
 }
 
-resource "openstack_containerinfra_cluster_v1" "cluster_1" {
+resource "nhncloud_kubernetes_cluster_v1" "cluster_1" {
   name                 = "%s"
-  cluster_template_id  = "${openstack_containerinfra_clustertemplate_v1.clustertemplate_1.id}"
+  cluster_template_id  = "${nhncloud_kubernetes_clustertemplate_v1.clustertemplate_1.id}"
   master_count         = 1
   node_count           = 1
-  keypair              = "${openstack_compute_keypair_v2.keypair_1.name}"
+  keypair              = "${nhncloud_compute_keypair_v2.keypair_1.name}"
 }
 
-resource "openstack_containerinfra_nodegroup_v1" "nodegroup_1" {
+resource "nhncloud_kubernetes_nodegroup_v1" "nodegroup_1" {
   name                 = "%s"
-  cluster_id           = "${openstack_containerinfra_cluster_v1.cluster_1.id}"
+  cluster_id           = "${nhncloud_kubernetes_cluster_v1.cluster_1.id}"
   node_count           = %d
   docker_volume_size   = 10
   role				   = "myRole"
@@ -374,13 +374,13 @@ resource "openstack_containerinfra_nodegroup_v1" "nodegroup_1" {
 `, keypairName, clusterTemplateName, osMagnumImage, osMagnumFlavor, osMagnumFlavor, osExtGwID, osMagnumHTTPProxy, osMagnumHTTPSProxy, osMagnumNoProxy, osMagnumLabels, clusterName, nodeGroupName, nodeCount, osMagnumImage, osMagnumFlavor)
 }
 
-func testAccContainerInfraV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName string, nodeGroupName string, nodeCount int) string {
+func testAccKubernetesV1NodeGroupOverrideLabels(keypairName, clusterTemplateName, clusterName string, nodeGroupName string, nodeCount int) string {
 	return fmt.Sprintf(`
-resource "openstack_compute_keypair_v2" "keypair_1" {
+resource "nhncloud_compute_keypair_v2" "keypair_1" {
   name = "%s"
 }
 
-resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
+resource "nhncloud_kubernetes_clustertemplate_v1" "clustertemplate_1" {
   name                  = "%s"
   image                 = "%s"
   coe                   = "kubernetes"
@@ -401,17 +401,17 @@ resource "openstack_containerinfra_clustertemplate_v1" "clustertemplate_1" {
   }
 }
 
-resource "openstack_containerinfra_cluster_v1" "cluster_1" {
+resource "nhncloud_kubernetes_cluster_v1" "cluster_1" {
   name                 = "%s"
-  cluster_template_id  = "${openstack_containerinfra_clustertemplate_v1.clustertemplate_1.id}"
+  cluster_template_id  = "${nhncloud_kubernetes_clustertemplate_v1.clustertemplate_1.id}"
   master_count         = 1
   node_count           = 1
-  keypair              = "${openstack_compute_keypair_v2.keypair_1.name}"
+  keypair              = "${nhncloud_compute_keypair_v2.keypair_1.name}"
 }
 
-resource "openstack_containerinfra_nodegroup_v1" "nodegroup_1" {
+resource "nhncloud_kubernetes_nodegroup_v1" "nodegroup_1" {
   name                 = "%s"
-  cluster_id           = "${openstack_containerinfra_cluster_v1.cluster_1.id}"
+  cluster_id           = "${nhncloud_kubernetes_cluster_v1.cluster_1.id}"
   node_count           = %d
   docker_volume_size   = 10
   role				   = "myRole"
