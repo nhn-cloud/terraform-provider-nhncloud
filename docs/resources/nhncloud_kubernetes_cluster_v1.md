@@ -34,20 +34,6 @@ resource "nhncloud_kubernetes_cluster_v1" "my_cluster" {
     strict_sg_rules               = "false"
   }
 
-  # Optional API endpoint IP access control
-  api_ep_ipacl {
-    enable = "True"
-    action = "ALLOW"
-    ipacl_targets {
-      cidr_address = "192.168.0.5"
-      description  = "My Friend"
-    }
-    ipacl_targets {
-      cidr_address = "10.10.22.3/24"
-      description  = "Your Friends"
-    }
-  }
-
   # Required addons configuration
   addons {
     name    = "calico"
@@ -68,78 +54,81 @@ resource "nhncloud_kubernetes_cluster_v1" "my_cluster" {
 
 The following arguments are supported:
 
-* `region` - (Optional) The region in which to create the cluster.
-* `name` - (Required) The name of the cluster. Changing this creates a new cluster.
-* `cluster_template_id` - (Required) The cluster template ID to use. Currently only "iaas_console" is supported. Changing this creates a new cluster.
-* `fixed_network` - (Required) The VPC network UUID. Changing this creates a new cluster.
-* `fixed_subnet` - (Required) The VPC subnet UUID. Changing this creates a new cluster.
-* `flavor_id` - (Required) The instance flavor UUID for cluster nodes. Changing this creates a new cluster.
-* `keypair` - (Required) The SSH keypair name for cluster nodes. Changing this creates a new cluster.
-* `node_count` - (Required) The number of worker nodes. Changing this creates a new cluster.
-* `labels` - (Required) A map of cluster configuration labels. Changing this creates a new cluster.
-* `api_ep_ipacl` - (Optional) API endpoint IP access control configuration. Changing this creates a new cluster.
-* `addons` - (Required) A list of addons to install on the cluster. Changing this creates a new cluster.
+* `region` - (Optional) Region to create the cluster.
+* `name` - (Required) Cluster name. Changing this creates a new cluster.
+* `cluster_template_id` - (Required) Cluster template ID (currently only "iaas_console" is supported). Changing this creates a new cluster.
+* `fixed_network` - (Required) VPC network UUID. Changing this creates a new cluster.
+* `fixed_subnet` - (Required) VPC subnet UUID. Changing this creates a new cluster.
+* `flavor_id` - (Required) Instance flavor UUID for worker nodes. Changing this creates a new cluster.
+* `keypair` - (Required) Keypair name for SSH access. Changing this creates a new cluster.
+* `node_count` - (Optional) Initial number of worker nodes for the default node group. Defaults to 1 if not specified.
+* `labels` - (Required) Cluster labels (key-value pairs for cluster configuration). Changing this creates a new cluster.
+* `addons` - (Required) List of addons to install (CNI and CoreDNS are required). Changing this creates a new cluster.
 
 ### Labels Configuration
 
 The `labels` block supports the following required arguments:
 
-* `kube_tag` - (Required) The Kubernetes version.
-* `availability_zone` - (Required) The availability zone for the default worker nodegroup.
-* `boot_volume_size` - (Required) The boot volume size in GB for the default worker nodegroup.
-* `boot_volume_type` - (Required) The boot volume type for the default worker nodegroup.
-* `ca_enable` - (Required) Whether to enable cluster autoscaler ("true"/"false").
-* `cert_manager_api` - (Required) Whether to enable CSR feature ("True").
-* `master_lb_floating_ip_enabled` - (Required) Whether to assign public IP to API endpoint ("true"/"false").
-* `node_image` - (Required) The base image UUID for the default worker nodegroup.
+* `kube_tag` - (Required) Kubernetes version (e.g., "v1.32.3").
+* `availability_zone` - (Required) Availability zone (e.g., "kr-pub-a").
+* `boot_volume_size` - (Required) Boot volume size (GB).
+* `boot_volume_type` - (Required) Boot volume type (e.g., "General HDD", "General SSD").
+* `ca_enable` - (Required) Enable cluster autoscaler ("true"/"false").
+* `cert_manager_api` - (Required) Enable CSR feature ("True"/"False").
+* `master_lb_floating_ip_enabled` - (Required) Create public domain for API endpoint ("true"/"false").
+* `node_image` - (Required) Base image UUID.
 
 Optional labels include:
 
-* `ca_max_node_count` - The maximum number of nodes for autoscaler.
-* `ca_min_node_count` - The minimum number of nodes for autoscaler.
-* `ca_scale_down_enable` - Whether to enable scale-down ("true"/"false").
-* `ca_scale_down_delay_after_add` - Scale-down delay after adding nodes (seconds).
-* `ca_scale_down_unneeded_time` - Unneeded time before scale-down (seconds).
-* `ca_scale_down_util_thresh` - CPU utilization threshold for scale-down (%).
-* `external_network_id` - External network UUID connected to Internet Gateway.
-* `external_subnet_id_list` - External subnet UUID list (colon-separated).
-* `strict_sg_rules` - Whether to create minimal security group rules ("true"/"false").
-
-### API Endpoint IP ACL Configuration
-
-The `api_ep_ipacl` block supports:
-
-* `enable` - (Required) Whether to enable IP access control.
-* `action` - (Required) The IP access control action type.
-* `ipacl_targets` - (Required) A list of IP access control targets.
-
-The `ipacl_targets` block supports:
-
-* `cidr_address` - (Required) IP address or CIDR range.
-* `description` - (Required) Description for the IP access control target.
+* `ca_max_node_count` - Maximum node count for autoscaler.
+* `ca_min_node_count` - Minimum node count for autoscaler.
+* `ca_scale_down_enable` - Enable autoscaler scale down ("true"/"false").
+* `ca_scale_down_delay_after_add` - Delay after scale out (minutes).
+* `ca_scale_down_unneeded_time` - Unneeded time before scale down (minutes).
+* `ca_scale_down_util_thresh` - Utilization threshold for scale down (%).
+* `external_network_id` - Internet Gateway network UUID.
+* `external_subnet_id_list` - Colon-separated Internet Gateway subnet UUID list.
+* `strict_sg_rules` - Apply strict security group rules ("true"/"false").
 
 ### Addons Configuration
 
 The `addons` block supports:
 
-* `name` - (Required) The addon name.
-* `version` - (Required) The addon version.
-* `options` - (Optional) A map of addon-specific options.
+* `name` - (Required) Addon name (e.g., "calico", "coredns").
+* `version` - (Required) Addon version.
+* `options` - (Optional) Addon-specific options (key-value pairs).
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The UUID of the cluster.
-* `status` - The status of the cluster.
-* `status_reason` - The reason for the cluster status.
-* `api_address` - The API server endpoint address.
-* `master_addresses` - A list of master node addresses.
-* `master_count` - The number of master nodes.
-* `node_addresses` - A list of worker node addresses.
-* `project_id` - The project ID of the cluster.
-* `stack_id` - The stack ID associated with the cluster.
-* `user_id` - The user ID who created the cluster.
-* `created_at` - The creation timestamp of the cluster.
-* `updated_at` - The last update timestamp of the cluster.
+* `id` - Cluster UUID.
+* `status` - Cluster status.
+* `status_reason` - Cluster status reason.
+* `api_address` - Kubernetes API endpoint address.
+* `node_addresses` - Worker node IP address list.
+* `project_id` - Project ID.
+* `stack_id` - Heat stack ID.
+* `user_id` - User ID.
+* `created_at` - Created time.
+* `updated_at` - Last updated time.
 
+## Lifecycle Configuration
+
+### Ignoring node_count Changes
+
+When using cluster autoscaler or managing node scaling separately with `nhncloud_kubernetes_cluster_resize_v1`, it's recommended to ignore changes to `node_count` to prevent Terraform from reverting autoscaler actions or manual scaling operations:
+
+```
+resource "nhncloud_kubernetes_cluster_v1" "my_cluster" {
+  name       = "my-nks-cluster"
+  node_count = 2
+  # ... other configuration ...
+
+  lifecycle {
+    ignore_changes = [node_count]
+  }
+}
+```
+
+**Note:** Without these lifecycle configurations, Terraform will attempt to revert changes to the values in your configuration file on every apply, potentially overriding autoscaler actions, upgrade operations, or manual changes.

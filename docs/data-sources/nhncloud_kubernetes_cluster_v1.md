@@ -26,27 +26,25 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The UUID of the cluster.
+* `id` - Cluster UUID.
 * `uuid` - See Argument Reference above.
 * `name` - See Argument Reference above.
-* `status` - The status of the cluster.
-* `status_reason` - The reason for the cluster status.
-* `api_address` - The API server endpoint address.
-* `cluster_template_id` - The cluster template ID used for creating the cluster.
-* `create_timeout` - The timeout for cluster creation.
-* `discovery_url` - The discovery URL for the cluster.
-* `fixed_network` - The fixed network UUID for the cluster.
-* `fixed_subnet` - The fixed subnet UUID for the cluster.
-* `flavor_id` - The flavor ID for cluster nodes.
-* `keypair` - The keypair name for cluster nodes.
-* `labels` - A map of cluster labels.
-* `master_addresses` - A list of master node addresses.
-* `master_count` - The number of master nodes.
-* `node_addresses` - A list of worker node addresses.
-* `node_count` - The number of worker nodes.
-* `project_id` - The project ID of the cluster.
-* `stack_id` - The stack ID associated with the cluster.
-* `user_id` - The user ID who created the cluster.
-* `created_at` - The creation timestamp of the cluster.
-* `updated_at` - The last update timestamp of the cluster.
+* `status` - Cluster status.
+* `status_reason` - Cluster status reason.
+* `api_address` - Kubernetes API endpoint address.
+* `cluster_template_id` - Cluster template ID.
+* `create_timeout` - Cluster creation timeout (minutes).
+* `discovery_url` - Discovery URL.
+* `fixed_network` - VPC network UUID.
+* `fixed_subnet` - VPC subnet UUID.
+* `flavor_id` - Instance flavor UUID.
+* `keypair` - Keypair name.
+* `labels` - Cluster labels (key-value pairs).
+* `node_addresses` - Worker node IP address list.
+* `node_count` - Number of worker nodes.
+* `project_id` - Project ID.
+* `stack_id` - Heat stack ID.
+* `user_id` - User ID.
+* `created_at` - Created time.
+* `updated_at` - Last updated time.
 
