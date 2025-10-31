@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clusters"
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
 
@@ -327,68 +326,6 @@ func resourceKubernetesNodeGroupV1Update(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	if d.HasChange("node_count") {
-		v := d.Get("node_count").(int)
-		var resizeOpts = clusters.ResizeOpts{
-			NodeCount: &v,
-			NodeGroup: nodeGroupID,
-		}
-		_, err = clusters.Resize(kubernetesClient, clusterID, resizeOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error resizing nhncloud_kubernetes_nodegroup_v1 %s: %s", d.Id(), err)
-		}
-
-		stateConf := &resource.StateChangeConf{
-			Pending:      []string{"UPDATE_IN_PROGRESS"},
-			Target:       []string{"UPDATE_COMPLETE"},
-			Refresh:      kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterID, nodeGroupID),
-			Timeout:      d.Timeout(schema.TimeoutUpdate),
-			Delay:        1 * time.Minute,
-			PollInterval: 20 * time.Second,
-		}
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf(
-				"Error waiting for nhncloud_kubernetes_node_group_v1 %s to become updated: %s", d.Id(), err)
-		}
-	}
-
-	// Handle nodegroup version upgrade
-	if d.HasChange("version") {
-		targetVersion := d.Get("version").(string)
-		maxUnavailableNodes := d.Get("num_max_unavailable_nodes").(int)
-		bufferNodes := d.Get("num_buffer_nodes").(int)
-
-		upgradeOpts := nodegroups.UpgradeOpts{
-			Version:                targetVersion,
-			NumMaxUnavailableNodes: maxUnavailableNodes,
-			NumBufferNodes:         bufferNodes,
-		}
-
-		log.Printf("[DEBUG] nhncloud_kubernetes_nodegroup_v1 upgrade options: %#v", upgradeOpts)
-
-		_, err = nodegroups.Upgrade(kubernetesClient, clusterID, nodeGroupID, upgradeOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error upgrading nhncloud_kubernetes_nodegroup_v1 %s: %s", d.Id(), err)
-		}
-
-		// Wait for upgrade completion (upgrades can take longer, so adjust timeout and intervals)
-		stateConf := &resource.StateChangeConf{
-			Pending:      []string{"UPDATE_IN_PROGRESS"},
-			Target:       []string{"UPDATE_COMPLETE"},
-			Refresh:      kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterID, nodeGroupID),
-			Timeout:      d.Timeout(schema.TimeoutUpdate),
-			Delay:        2 * time.Minute,  // Increased delay for upgrade start
-			PollInterval: 30 * time.Second, // Increased polling interval
-		}
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf(
-				"Error waiting for nhncloud_kubernetes_nodegroup_v1 %s upgrade to complete: %s", d.Id(), err)
-		}
-
-		log.Printf("[DEBUG] nhncloud_kubernetes_nodegroup_v1 upgrade completed: %s", d.Id())
-	}
 	return resourceKubernetesNodeGroupV1Read(ctx, d, meta)
 }
 

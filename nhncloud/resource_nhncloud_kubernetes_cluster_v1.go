@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -20,7 +19,6 @@ func resourceKubernetesClusterV1() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceKubernetesClusterV1Create,
 		ReadContext:   resourceKubernetesClusterV1Read,
-		UpdateContext: resourceKubernetesClusterV1Update,
 		DeleteContext: resourceKubernetesClusterV1Delete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -28,7 +26,6 @@ func resourceKubernetesClusterV1() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
@@ -144,8 +141,7 @@ func resourceKubernetesClusterV1() *schema.Resource {
 			"node_count": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				ForceNew: false,
-				Default:  1,
+				Computed: true,
 			},
 
 			"node_addresses": {
@@ -485,50 +481,6 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 	}
 
 	return nil
-}
-
-func resourceKubernetesClusterV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*Config)
-	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
-	}
-
-	updateOpts := []clusters.UpdateOptsBuilder{}
-
-	if d.HasChange("node_count") {
-		nodeCount := d.Get("node_count").(int)
-		updateOpts = append(updateOpts, clusters.UpdateOpts{
-			Op:    clusters.ReplaceOp,
-			Path:  strings.Join([]string{"/", "node_count"}, ""),
-			Value: nodeCount,
-		})
-	}
-
-	if len(updateOpts) > 0 {
-		log.Printf(
-			"[DEBUG] Updating nhncloud_kubernetes_cluster_v1 %s with options: %#v", d.Id(), updateOpts)
-
-		_, err = clusters.Update(kubernetesClient, d.Id(), updateOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error updating nhncloud_kubernetes_cluster_v1 %s: %s", d.Id(), err)
-		}
-
-		stateConf := &resource.StateChangeConf{
-			Pending:      []string{"UPDATE_IN_PROGRESS"},
-			Target:       []string{"UPDATE_COMPLETE"},
-			Refresh:      kubernetesClusterV1StateRefreshFunc(kubernetesClient, d.Id()),
-			Timeout:      d.Timeout(schema.TimeoutUpdate),
-			Delay:        1 * time.Minute,
-			PollInterval: 20 * time.Second,
-		}
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf(
-				"Error waiting for nhncloud_kubernetes_cluster_v1 %s to become updated: %s", d.Id(), err)
-		}
-	}
-	return resourceKubernetesClusterV1Read(ctx, d, meta)
 }
 
 func resourceKubernetesClusterV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
