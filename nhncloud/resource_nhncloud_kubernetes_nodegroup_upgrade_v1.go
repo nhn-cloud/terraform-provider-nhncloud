@@ -3,6 +3,7 @@ package nhncloud
 import (
 	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,10 +17,12 @@ func resourceKubernetesNodegroupUpgradeV1() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceKubernetesNodegroupUpgradeV1Create,
 		ReadContext:   resourceKubernetesNodegroupUpgradeV1Read,
+		UpdateContext: resourceKubernetesNodegroupUpgradeV1Update,
 		DeleteContext: resourceKubernetesNodegroupUpgradeV1Delete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(5 * time.Minute),
 		},
 
@@ -46,20 +49,20 @@ func resourceKubernetesNodegroupUpgradeV1() *schema.Resource {
 			"version": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
+				ForceNew: false,
 			},
 
 			"num_buffer_nodes": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				Default:  1,
 			},
 
 			"num_max_unavailable_nodes": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				Default:  1,
 			},
 
@@ -83,7 +86,11 @@ func resourceKubernetesNodegroupUpgradeV1Create(ctx context.Context, d *schema.R
 	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
-	nodegroupIDOrName := d.Get("nodegroup_id").(string)
+	nodegroupInput := d.Get("nodegroup_id").(string)
+
+	// Extract nodegroup_id from "cluster_id/nodegroup_id" format if necessary
+	// This allows using nhncloud_kubernetes_nodegroup_v1.resource_name.id directly
+	nodegroupIDOrName := extractNodeGroupIDForUpgrade(nodegroupInput)
 
 	// Build upgrade options
 	upgradeOpts := nodegroups.UpgradeOpts{
@@ -171,8 +178,90 @@ func resourceKubernetesNodegroupUpgradeV1Read(ctx context.Context, d *schema.Res
 	return nil
 }
 
+func resourceKubernetesNodegroupUpgradeV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	config := meta.(*Config)
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	if err != nil {
+		return diag.Errorf("Error creating NHN Cloud Kubernetes client: %s", err)
+	}
+
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
+
+	if d.HasChange("version") || d.HasChange("num_buffer_nodes") || d.HasChange("num_max_unavailable_nodes") {
+		clusterIDOrName := d.Get("cluster_id").(string)
+		nodegroupInput := d.Get("nodegroup_id").(string)
+		nodegroupIDOrName := extractNodeGroupIDForUpgrade(nodegroupInput)
+
+		// Build upgrade options
+		upgradeOpts := nodegroups.UpgradeOpts{
+			Version: d.Get("version").(string),
+		}
+
+		if v, ok := d.GetOk("num_buffer_nodes"); ok {
+			upgradeOpts.NumBufferNodes = v.(int)
+		}
+		if v, ok := d.GetOk("num_max_unavailable_nodes"); ok {
+			upgradeOpts.NumMaxUnavailableNodes = v.(int)
+		}
+
+		log.Printf("[DEBUG] Waiting for cluster %s to be in stable state before nodegroup upgrade", clusterIDOrName)
+
+		// Wait for cluster to be in a stable state before attempting upgrade
+		clusterStateConf := &resource.StateChangeConf{
+			Pending:    []string{"UPDATE_IN_PROGRESS", "CREATE_IN_PROGRESS"},
+			Target:     []string{"UPDATE_COMPLETE", "CREATE_COMPLETE"},
+			Refresh:    kubernetesClusterV1StateRefreshFunc(kubernetesClient, clusterIDOrName),
+			Timeout:    10 * time.Minute,
+			Delay:      30 * time.Second,
+			MinTimeout: 10 * time.Second,
+		}
+
+		_, err = clusterStateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("Error waiting for cluster %s to be in stable state before nodegroup upgrade: %s", clusterIDOrName, err)
+		}
+
+		log.Printf("[DEBUG] Upgrading NKS nodegroup %s in cluster %s to version %s", nodegroupIDOrName, clusterIDOrName, upgradeOpts.Version)
+
+		_, err = nodegroups.Upgrade(kubernetesClient, clusterIDOrName, nodegroupIDOrName, upgradeOpts).Extract()
+		if err != nil {
+			return diag.Errorf("Error upgrading NKS nodegroup %s in cluster %s: %s", nodegroupIDOrName, clusterIDOrName, err)
+		}
+
+		log.Printf("[DEBUG] Waiting for NKS nodegroup %s upgrade to complete", d.Id())
+
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"UPDATE_IN_PROGRESS"},
+			Target:     []string{"UPDATE_COMPLETE"},
+			Refresh:    kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, d.Id()),
+			Timeout:    d.Timeout(schema.TimeoutUpdate),
+			Delay:      30 * time.Second,
+			MinTimeout: 10 * time.Second,
+		}
+
+		_, err = stateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("Error waiting for NKS nodegroup %s upgrade to complete: %s", d.Id(), err)
+		}
+	}
+
+	return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
+}
+
 func resourceKubernetesNodegroupUpgradeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This is a one-time operation resource, so delete just removes it from state
 	log.Printf("[DEBUG] Removing NKS nodegroup upgrade resource %s from state", d.Id())
 	return nil
+}
+
+// extractNodeGroupIDForUpgrade extracts the nodegroup ID from either a simple ID or "cluster_id/nodegroup_id" format
+// This allows users to reference nhncloud_kubernetes_nodegroup_v1 resources directly
+func extractNodeGroupIDForUpgrade(input string) string {
+	parts := strings.Split(input, "/")
+	if len(parts) >= 2 {
+		// Return the last part if in "cluster_id/nodegroup_id" format
+		return parts[len(parts)-1]
+	}
+	// Return as-is if already a simple ID
+	return input
 }

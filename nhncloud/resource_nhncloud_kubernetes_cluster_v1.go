@@ -84,10 +84,9 @@ func resourceKubernetesClusterV1() *schema.Resource {
 			},
 
 			"cluster_template_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_MAGNUM_CLUSTER_TEMPLATE", nil),
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 
 			"container_version": {
@@ -122,6 +121,24 @@ func resourceKubernetesClusterV1() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					labels := v.(map[string]interface{})
+					requiredLabels := []string{
+						"availability_zone",
+						"node_image",
+						"boot_volume_type",
+						"boot_volume_size",
+						"cert_manager_api",
+						"ca_enable",
+						"kube_tag",
+						"master_lb_floating_ip_enabled"}
+					for _, key := range requiredLabels {
+						if _, exists := labels[key]; !exists {
+							errors = append(errors, fmt.Errorf("required label '%s' is missing in %s", key, k))
+						}
+					}
+					return
+				},
 			},
 
 			"node_count": {
@@ -204,6 +221,7 @@ func resourceKubernetesClusterV1() *schema.Resource {
 						"options": {
 							Type:     schema.TypeMap,
 							Optional: true,
+							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -235,6 +253,15 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		FixedNetwork:      d.Get("fixed_network").(string),
 		FixedSubnet:       d.Get("fixed_subnet").(string),
 	}
+
+	// Set node_count with default value of 1 if not specified
+	var nodeCount int
+	if v, ok := d.GetOk("node_count"); ok {
+		nodeCount = v.(int)
+	} else {
+		nodeCount = 1 // Default value when not specified
+	}
+	createOpts.NodeCount = &nodeCount
 
 	// Set addons
 	if v, ok := d.GetOk("addons"); ok {
@@ -323,10 +350,7 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 
 	log.Printf("[DEBUG] Retrieved nhncloud_kubernetes_cluster_v1 %s: %#v", d.Id(), s)
 
-	labels := s.Labels
-	if err := d.Set("labels", labels); err != nil {
-		return diag.Errorf("Unable to set nhncloud_kubernetes_cluster_v1 labels: %s", err)
-	}
+	apiLabels := s.Labels
 
 	nodeCount, err := getKubernetesDefaultNodegroupNodeCount(kubernetesClient, d.Id())
 	if err != nil {
@@ -341,11 +365,18 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 	d.Set("user_id", s.UserID)
 	d.Set("api_address", s.APIAddress)
 	d.Set("coe_version", s.COEVersion)
-	d.Set("cluster_template_id", s.ClusterTemplateID)
+
+	configTemplateID := d.Get("cluster_template_id").(string)
+	if configTemplateID != "" {
+		d.Set("cluster_template_id", configTemplateID)
+	} else {
+		d.Set("cluster_template_id", "iaas_console")
+	}
+
 	d.Set("container_version", s.ContainerVersion)
 	d.Set("create_timeout", s.CreateTimeout)
 	d.Set("docker_volume_size", s.DockerVolumeSize)
-	d.Set("flavor", s.FlavorID)
+	d.Set("flavor_id", s.FlavorID)
 	d.Set("keypair", s.KeyPair)
 	d.Set("node_count", nodeCount)
 	d.Set("node_addresses", s.NodeAddresses)
@@ -361,6 +392,96 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 	}
 	if err := d.Set("updated_at", s.UpdatedAt.Format(time.RFC3339)); err != nil {
 		log.Printf("[DEBUG] Unable to set nhncloud_kubernetes_cluster_v1 updated_at: %s", err)
+	}
+
+	if _, ok := d.GetOk("kubeconfig"); !ok {
+		d.Set("kubeconfig", map[string]interface{}{})
+	}
+
+	// Filter labels to prevent state updating:
+	// - Only store user-defined labels (ignore API auto-generated labels)
+	// - For labels not returned by API, use config value
+	// - For labels returned by API, use API value to reflect actual state
+	rawConfig := d.GetRawConfig()
+	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("labels") {
+		configLabelsAttr := rawConfig.GetAttr("labels")
+		if configLabelsAttr.IsKnown() && !configLabelsAttr.IsNull() &&
+			(configLabelsAttr.Type().IsObjectType() || configLabelsAttr.Type().IsMapType()) {
+
+			// Labels required by API but not returned in response (must use config value)
+			configOnlyLabels := map[string]bool{
+				"boot_volume_size": true,
+				"boot_volume_type": true,
+				"ca_enable":        true,
+			}
+
+			filteredLabels := make(map[string]string)
+			for key, val := range configLabelsAttr.AsValueMap() {
+				if val.IsNull() || !val.IsKnown() {
+					continue
+				}
+
+				if configOnlyLabels[key] {
+					filteredLabels[key] = val.AsString()
+				} else if apiVal, exists := apiLabels[key]; exists {
+					filteredLabels[key] = apiVal
+				}
+			}
+
+			if err := d.Set("labels", filteredLabels); err != nil {
+				log.Printf("[DEBUG] Unable to set labels: %s", err)
+			}
+		}
+	}
+
+	// Normalize addons: preserve user config values and handle empty options
+	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("addons") {
+		configAddonsAttr := rawConfig.GetAttr("addons")
+		if configAddonsAttr.IsKnown() && !configAddonsAttr.IsNull() &&
+			(configAddonsAttr.Type().IsListType() || configAddonsAttr.Type().IsTupleType()) {
+
+			addonsValues := configAddonsAttr.AsValueSlice()
+			normalizedAddons := make([]map[string]interface{}, len(addonsValues))
+
+			for i, addonVal := range addonsValues {
+				if !addonVal.Type().IsObjectType() {
+					continue
+				}
+
+				addonMap := addonVal.AsValueMap()
+				normalizedAddon := make(map[string]interface{})
+
+				// Extract name and version
+				if nameVal, exists := addonMap["name"]; exists && nameVal.IsKnown() && !nameVal.IsNull() {
+					normalizedAddon["name"] = nameVal.AsString()
+				}
+				if versionVal, exists := addonMap["version"]; exists && versionVal.IsKnown() && !versionVal.IsNull() {
+					normalizedAddon["version"] = versionVal.AsString()
+				}
+
+				// Extract options if present and non-empty
+				if optionsVal, exists := addonMap["options"]; exists &&
+					optionsVal.IsKnown() && !optionsVal.IsNull() &&
+					(optionsVal.Type().IsMapType() || optionsVal.Type().IsObjectType()) {
+
+					optionsMap := make(map[string]interface{})
+					for k, v := range optionsVal.AsValueMap() {
+						if v.IsKnown() && !v.IsNull() {
+							optionsMap[k] = v.AsString()
+						}
+					}
+					if len(optionsMap) > 0 {
+						normalizedAddon["options"] = optionsMap
+					}
+				}
+
+				normalizedAddons[i] = normalizedAddon
+			}
+
+			if err := d.Set("addons", normalizedAddons); err != nil {
+				log.Printf("[DEBUG] Unable to set addons: %s", err)
+			}
+		}
 	}
 
 	return nil
