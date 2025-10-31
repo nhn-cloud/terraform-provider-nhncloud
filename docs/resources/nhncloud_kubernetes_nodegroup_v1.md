@@ -30,11 +30,11 @@ The following arguments are supported:
 * `region` - (Optional) Region to create the node group.
 * `cluster_id` - (Required) Cluster UUID. Changing this creates a new node group.
 * `name` - (Required) Node group name. Changing this creates a new node group.
-* `node_count` - (Optional, Computed) Initial number of nodes. Defaults to 1 if not specified. After creation, this value becomes read-only and reflects the actual node count. To change the node count, use the `nhncloud_kubernetes_cluster_resize_v1` resource. See lifecycle configuration below.
+* `node_count` - (Optional) Initial number of nodes. Defaults to 1 if not specified. After creation, this value becomes read-only and reflects the actual node count. To change the node count, use the `nhncloud_kubernetes_cluster_resize_v1` resource. See lifecycle configuration below.
 * `flavor_id` - (Required) Instance flavor UUID. Changing this creates a new node group.
 * `image_id` - (Required) Base image UUID. Changing this creates a new node group.
 * `labels` - (Required) Node group labels (key-value pairs for configuration). Changing this creates a new node group.
-* `version` - (Optional, Computed) Kubernetes version. After creation, this value becomes read-only and reflects the actual version. To upgrade the version, use the `nhncloud_kubernetes_nodegroup_upgrade_v1` resource.
+* `version` - (Optional) Kubernetes version. After creation, this value becomes read-only and reflects the actual version. To upgrade the version, use the `nhncloud_kubernetes_nodegroup_upgrade_v1` resource.
 * `min_node_count` - (Optional) Minimum node count for autoscaling. Can be updated.
 * `max_node_count` - (Optional) Maximum node count for autoscaling. Can be updated.
 
@@ -119,7 +119,7 @@ resource "nhncloud_kubernetes_cluster_resize_v1" "scale_workers" {
 
 When using `nhncloud_kubernetes_nodegroup_upgrade_v1` resource to manage Kubernetes version upgrades separately, you should also ignore version changes:
 
-```hcl
+```
 resource "nhncloud_kubernetes_nodegroup_v1" "my_nodegroup" {
   cluster_id = nhncloud_kubernetes_cluster_v1.my_cluster.uuid
   name       = "workers"
