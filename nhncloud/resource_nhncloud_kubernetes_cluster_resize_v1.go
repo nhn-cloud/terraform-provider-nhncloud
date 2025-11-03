@@ -213,6 +213,7 @@ func resourceKubernetesClusterResizeV1Update(ctx context.Context, d *schema.Reso
 }
 
 func resourceKubernetesClusterResizeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This is a one-time operation resource, so delete just removes it from state
 	log.Printf("[DEBUG] Removing NKS cluster resize resource %s from state", d.Id())
 	return nil
 }

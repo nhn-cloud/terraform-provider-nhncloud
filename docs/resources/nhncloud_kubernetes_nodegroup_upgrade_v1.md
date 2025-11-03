@@ -1,7 +1,5 @@
 # Resource: nhncloud_kubernetes_nodegroup_upgrade_v1
 
-~> **Note** This resource performs a one-time operation. It does not maintain ongoing state and should be used when you need to upgrade a nodegroup to a specific Kubernetes version.
-
 ## Example Usage
 
 ```

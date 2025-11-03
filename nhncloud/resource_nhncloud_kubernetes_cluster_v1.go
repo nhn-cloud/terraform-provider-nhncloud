@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,6 +16,15 @@ import (
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clusters"
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
+
+func normalizeColonSeparatedList(value string) string {
+	if value == "" {
+		return value
+	}
+	parts := strings.Split(value, ":")
+	sort.Strings(parts)
+	return strings.Join(parts, ":")
+}
 
 func resourceKubernetesClusterV1() *schema.Resource {
 	return &schema.Resource{
@@ -250,16 +261,14 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		FixedSubnet:       d.Get("fixed_subnet").(string),
 	}
 
-	// Set node_count with default value of 1 if not specified
 	var nodeCount int
 	if v, ok := d.GetOk("node_count"); ok {
 		nodeCount = v.(int)
 	} else {
-		nodeCount = 1 // Default value when not specified
+		nodeCount = 1
 	}
 	createOpts.NodeCount = &nodeCount
 
-	// Set addons
 	if v, ok := d.GetOk("addons"); ok {
 		addonList := v.([]interface{})
 		createOpts.Addons = make([]clusters.Addon, len(addonList))
@@ -287,7 +296,6 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error creating nhncloud_kubernetes_cluster_v1: %s", err)
 	}
 
-	// Store the Cluster ID.
 	d.SetId(s.UUID)
 
 	stateConf := &resource.StateChangeConf{
@@ -394,21 +402,14 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 		d.Set("kubeconfig", map[string]interface{}{})
 	}
 
-	// Filter labels to prevent state updating:
-	// - Only store user-defined labels (ignore API auto-generated labels)
-	// - For labels not returned by API, use config value
-	// - For labels returned by API, use API value to reflect actual state
 	rawConfig := d.GetRawConfig()
 	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("labels") {
 		configLabelsAttr := rawConfig.GetAttr("labels")
 		if configLabelsAttr.IsKnown() && !configLabelsAttr.IsNull() &&
 			(configLabelsAttr.Type().IsObjectType() || configLabelsAttr.Type().IsMapType()) {
 
-			// Labels required by API but not returned in response (must use config value)
-			configOnlyLabels := map[string]bool{
-				"boot_volume_size": true,
-				"boot_volume_type": true,
-				"ca_enable":        true,
+			labelsNeedingNormalization := map[string]bool{
+				"external_subnet_id_list": true,
 			}
 
 			filteredLabels := make(map[string]string)
@@ -416,10 +417,24 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 				if val.IsNull() || !val.IsKnown() {
 					continue
 				}
+				filteredLabels[key] = val.AsString()
+			}
 
-				if configOnlyLabels[key] {
-					filteredLabels[key] = val.AsString()
-				} else if apiVal, exists := apiLabels[key]; exists {
+			for key, apiVal := range apiLabels {
+				if _, existsInConfig := filteredLabels[key]; !existsInConfig {
+					continue
+				}
+
+				if labelsNeedingNormalization[key] {
+					configValue := filteredLabels[key]
+					normalizedConfigValue := normalizeColonSeparatedList(configValue)
+					normalizedApiValue := normalizeColonSeparatedList(apiVal)
+					if normalizedConfigValue == normalizedApiValue {
+						filteredLabels[key] = configValue
+					} else {
+						filteredLabels[key] = apiVal
+					}
+				} else {
 					filteredLabels[key] = apiVal
 				}
 			}
@@ -430,7 +445,6 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	// Normalize addons: preserve user config values and handle empty options
 	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("addons") {
 		configAddonsAttr := rawConfig.GetAttr("addons")
 		if configAddonsAttr.IsKnown() && !configAddonsAttr.IsNull() &&
@@ -447,7 +461,6 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 				addonMap := addonVal.AsValueMap()
 				normalizedAddon := make(map[string]interface{})
 
-				// Extract name and version
 				if nameVal, exists := addonMap["name"]; exists && nameVal.IsKnown() && !nameVal.IsNull() {
 					normalizedAddon["name"] = nameVal.AsString()
 				}
@@ -455,7 +468,6 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 					normalizedAddon["version"] = versionVal.AsString()
 				}
 
-				// Extract options if present and non-empty
 				if optionsVal, exists := addonMap["options"]; exists &&
 					optionsVal.IsKnown() && !optionsVal.IsNull() &&
 					(optionsVal.Type().IsMapType() || optionsVal.Type().IsObjectType()) {

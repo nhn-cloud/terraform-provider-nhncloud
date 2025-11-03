@@ -168,12 +168,11 @@ func resourceKubernetesNodeGroupV1Create(ctx context.Context, d *schema.Resource
 		FlavorID: d.Get("flavor_id").(string),
 	}
 
-	// Get node_count with default value of 1 if not specified
 	var nodeCount int
 	if v, ok := d.GetOk("node_count"); ok {
 		nodeCount = v.(int)
 	} else {
-		nodeCount = 1 // Default value when not specified
+		nodeCount = 1
 	}
 
 	createOpts.NodeCount = &nodeCount
@@ -232,7 +231,6 @@ func resourceKubernetesNodeGroupV1Read(_ context.Context, d *schema.ResourceData
 
 	log.Printf("[DEBUG] Retrieved nhncloud_kubernetes_nodegroup_v1 %s: %#v", d.Id(), nodeGroup)
 
-	// Filter labels: only store user-defined labels from config, ignore API auto-generated labels
 	apiLabels := nodeGroup.Labels
 	rawConfig := d.GetRawConfig()
 	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("labels") {
@@ -245,18 +243,16 @@ func resourceKubernetesNodeGroupV1Read(_ context.Context, d *schema.ResourceData
 				if val.IsNull() || !val.IsKnown() {
 					continue
 				}
+				filteredLabels[key] = val.AsString()
+			}
 
-				if apiVal, exists := apiLabels[key]; exists {
+			for key, apiVal := range apiLabels {
+				if _, existsInConfig := filteredLabels[key]; existsInConfig {
 					filteredLabels[key] = apiVal
 				}
 			}
 
 			if err := d.Set("labels", filteredLabels); err != nil {
-				return diag.Errorf("Unable to set labels: %s", err)
-			}
-		} else {
-			// Set empty map if no labels in config (ignore API auto-generated labels)
-			if err := d.Set("labels", map[string]string{}); err != nil {
 				return diag.Errorf("Unable to set labels: %s", err)
 			}
 		}

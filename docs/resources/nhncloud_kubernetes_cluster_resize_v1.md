@@ -1,7 +1,5 @@
 # Resource: nhncloud_kubernetes_cluster_resize_v1
 
-~> **Note** This resource performs a one-time operation. It does not maintain ongoing state and should be used when you need to resize a specific nodegroup within a cluster.
-
 ## Example Usage
 
 ```
