@@ -309,10 +309,10 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
-			"Error waiting for nhncloud_kubernetes_cluster_v1 %s to become ready: %s", s, err)
+			"Error waiting for nhncloud_kubernetes_cluster_v1 %s to become ready: %s", s.UUID, err)
 	}
 
-	log.Printf("[DEBUG] Created nhncloud_kubernetes_cluster_v1 %s", s)
+	log.Printf("[DEBUG] Created nhncloud_kubernetes_cluster_v1 %s", s.UUID)
 
 	return resourceKubernetesClusterV1Read(ctx, d, meta)
 }
@@ -425,17 +425,19 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 					continue
 				}
 
+				apiValStr := flattenKubernetesV1LabelValue(apiVal)
+
 				if labelsNeedingNormalization[key] {
 					configValue := filteredLabels[key]
 					normalizedConfigValue := normalizeColonSeparatedList(configValue)
-					normalizedApiValue := normalizeColonSeparatedList(apiVal)
+					normalizedApiValue := normalizeColonSeparatedList(apiValStr)
 					if normalizedConfigValue == normalizedApiValue {
 						filteredLabels[key] = configValue
 					} else {
-						filteredLabels[key] = apiVal
+						filteredLabels[key] = apiValStr
 					}
 				} else {
-					filteredLabels[key] = apiVal
+					filteredLabels[key] = apiValStr
 				}
 			}
 

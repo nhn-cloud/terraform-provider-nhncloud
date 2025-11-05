@@ -248,7 +248,7 @@ func resourceKubernetesNodeGroupV1Read(_ context.Context, d *schema.ResourceData
 
 			for key, apiVal := range apiLabels {
 				if _, existsInConfig := filteredLabels[key]; existsInConfig {
-					filteredLabels[key] = apiVal
+					filteredLabels[key] = flattenKubernetesV1LabelValue(apiVal)
 				}
 			}
 

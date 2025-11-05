@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -30,28 +31,96 @@ const (
 	kubernetesV1NodeGroupMinMicroversion  = "latest"
 )
 
-func expandKubernetesV1LabelsMap(v map[string]interface{}) (map[string]string, error) {
-	m := make(map[string]string)
+func expandKubernetesV1LabelsMap(v map[string]interface{}) (map[string]interface{}, error) {
+	m := make(map[string]interface{})
 	for key, val := range v {
-		labelValue, ok := val.(string)
-		if !ok {
-			return nil, fmt.Errorf("label %s value should be string", key)
+		convertedVal, err := parseKubernetesV1LabelValue(val)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse label %s: %s", key, err)
 		}
-		m[key] = labelValue
+		m[key] = convertedVal
 	}
 	return m, nil
 }
 
-func expandKubernetesV1LabelsString(v map[string]interface{}) (string, error) {
-	var formattedLabels string
-	for key, val := range v {
-		labelValue, ok := val.(string)
-		if !ok {
-			return "", fmt.Errorf("label %s value should be string", key)
+func parseKubernetesV1LabelValue(val interface{}) (interface{}, error) {
+	if val == nil {
+		return nil, nil
+	}
+
+	strVal, ok := val.(string)
+	if !ok {
+		return val, nil
+	}
+
+	if strVal == "" {
+		return strVal, nil
+	}
+
+	trimmedVal := strings.TrimSpace(strVal)
+
+	// Only parse JSON arrays, keep objects as strings
+	// API expects some fields (like control_plane_log) to remain as JSON strings
+	if strings.HasPrefix(trimmedVal, "[") && strings.HasSuffix(trimmedVal, "]") {
+		var arrayVal []interface{}
+		if err := json.Unmarshal([]byte(trimmedVal), &arrayVal); err == nil {
+			return arrayVal, nil
 		}
+	}
+
+	return strVal, nil
+}
+
+func flattenKubernetesV1LabelValue(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+
+	switch v := val.(type) {
+	case string:
+		return v
+	case int, int32, int64, float32, float64, bool:
+		return fmt.Sprintf("%v", v)
+	case []interface{}, []string, map[string]interface{}:
+		jsonBytes, err := json.Marshal(v)
+		if err != nil {
+			return fmt.Sprintf("%v", v)
+		}
+		return string(jsonBytes)
+	default:
+		jsonBytes, err := json.Marshal(v)
+		if err != nil {
+			return fmt.Sprintf("%v", v)
+		}
+		return string(jsonBytes)
+	}
+}
+
+func expandKubernetesV1LabelsString(v map[string]interface{}) (string, error) {
+	labelsMap, err := expandKubernetesV1LabelsMap(v)
+	if err != nil {
+		return "", err
+	}
+
+	var formattedLabels string
+	for key, val := range labelsMap {
+		var labelValueStr string
+		switch v := val.(type) {
+		case string:
+			labelValueStr = v
+		case int, int32, int64, float32, float64, bool:
+			labelValueStr = fmt.Sprintf("%v", v)
+		default:
+			jsonBytes, err := json.Marshal(v)
+			if err != nil {
+				return "", fmt.Errorf("failed to marshal label %s: %s", key, err)
+			}
+			labelValueStr = string(jsonBytes)
+		}
+
 		formattedLabels = strings.Join([]string{
 			formattedLabels,
-			fmt.Sprintf("'%s':'%s'", key, labelValue),
+			fmt.Sprintf("'%s':'%s'", key, labelValueStr),
 		}, ",")
 	}
 	formattedLabels = strings.Trim(formattedLabels, ",")
