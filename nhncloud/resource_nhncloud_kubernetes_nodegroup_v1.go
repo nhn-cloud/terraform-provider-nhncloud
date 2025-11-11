@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -226,6 +227,13 @@ func resourceKubernetesNodeGroupV1Read(_ context.Context, d *schema.ResourceData
 
 	nodeGroup, err := nodegroups.Get(kubernetesClient, clusterID, nodeGroupID).Extract()
 	if err != nil {
+		if _, ok := err.(gophercloud.ErrDefault403); ok {
+			if nodeGroupID == "default-master" {
+				log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
+				return nil
+			}
+			return diag.Errorf("Error retrieving nhncloud_kubernetes_nodegroup_v1 %s: %s", d.Id(), err)
+		}
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving nhncloud_kubernetes_nodegroup_v1"))
 	}
 

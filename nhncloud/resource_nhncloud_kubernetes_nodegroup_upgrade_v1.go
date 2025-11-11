@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,6 +133,12 @@ func resourceKubernetesNodegroupUpgradeV1Create(ctx context.Context, d *schema.R
 
 	d.SetId(nodegroup.UUID)
 
+	if nodegroupIDOrName == "default-master" {
+		log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
+		log.Printf("[INFO] Skipping status verification for default-master nodegroup upgrade")
+		return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
+	}
+
 	log.Printf("[DEBUG] Waiting for NKS nodegroup %s upgrade to complete", nodegroup.UUID)
 
 	stateConf := &resource.StateChangeConf{
@@ -165,6 +172,16 @@ func resourceKubernetesNodegroupUpgradeV1Read(ctx context.Context, d *schema.Res
 
 	nodegroup, err := nodegroups.Get(kubernetesClient, clusterIDOrName, d.Id()).Extract()
 	if err != nil {
+		if _, ok := err.(gophercloud.ErrDefault403); ok {
+			nodegroupInput := d.Get("nodegroup_id").(string)
+			nodegroupIDOrName := extractNodeGroupIDForUpgrade(nodegroupInput)
+
+			if nodegroupIDOrName == "default-master" {
+				log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
+				return nil
+			}
+			return diag.Errorf("Error retrieving NKS nodegroup %s: %s", d.Id(), err)
+		}
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving NKS nodegroup"))
 	}
 
@@ -226,6 +243,12 @@ func resourceKubernetesNodegroupUpgradeV1Update(ctx context.Context, d *schema.R
 		_, err = nodegroups.Upgrade(kubernetesClient, clusterIDOrName, nodegroupIDOrName, upgradeOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error upgrading NKS nodegroup %s in cluster %s: %s", nodegroupIDOrName, clusterIDOrName, err)
+		}
+
+		if nodegroupIDOrName == "default-master" {
+			log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
+			log.Printf("[INFO] Skipping status verification for default-master nodegroup upgrade")
+			return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
 		}
 
 		log.Printf("[DEBUG] Waiting for NKS nodegroup %s upgrade to complete", d.Id())
