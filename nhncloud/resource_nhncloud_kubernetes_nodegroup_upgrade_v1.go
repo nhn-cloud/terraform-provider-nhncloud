@@ -134,25 +134,37 @@ func resourceKubernetesNodegroupUpgradeV1Create(ctx context.Context, d *schema.R
 	d.SetId(nodegroup.UUID)
 
 	if nodegroupIDOrName == "default-master" {
-		log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
-		log.Printf("[INFO] Skipping status verification for default-master nodegroup upgrade")
-		return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
-	}
+		log.Printf("[DEBUG] Waiting for cluster %s to complete default-master nodegroup upgrade", clusterIDOrName)
 
-	log.Printf("[DEBUG] Waiting for NKS nodegroup %s upgrade to complete", nodegroup.UUID)
+		clusterUpgradeStateConf := &resource.StateChangeConf{
+			Pending:    []string{"UPDATE_IN_PROGRESS"},
+			Target:     []string{"UPDATE_COMPLETE", "CREATE_COMPLETE"},
+			Refresh:    kubernetesClusterV1StateRefreshFunc(kubernetesClient, clusterIDOrName),
+			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Delay:      30 * time.Second,
+			MinTimeout: 10 * time.Second,
+		}
 
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"UPDATE_IN_PROGRESS"},
-		Target:     []string{"UPDATE_COMPLETE"},
-		Refresh:    kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, nodegroup.UUID),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      30 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
+		_, err = clusterUpgradeStateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("Error waiting for cluster %s to complete default-master upgrade: %s", clusterIDOrName, err)
+		}
+	} else {
+		log.Printf("[DEBUG] Waiting for nodegroup %s upgrade to complete", nodegroup.UUID)
 
-	_, err = stateConf.WaitForStateContext(ctx)
-	if err != nil {
-		return diag.Errorf("Error waiting for NKS nodegroup %s upgrade to complete: %s", nodegroup.UUID, err)
+		nodegroupUpgradeStateConf := &resource.StateChangeConf{
+			Pending:    []string{"UPDATE_IN_PROGRESS"},
+			Target:     []string{"UPDATE_COMPLETE"},
+			Refresh:    kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, nodegroup.UUID),
+			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Delay:      30 * time.Second,
+			MinTimeout: 10 * time.Second,
+		}
+
+		_, err = nodegroupUpgradeStateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("Error waiting for nodegroup %s upgrade to complete: %s", nodegroup.UUID, err)
+		}
 	}
 
 	return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
@@ -169,17 +181,18 @@ func resourceKubernetesNodegroupUpgradeV1Read(ctx context.Context, d *schema.Res
 	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 
 	clusterIDOrName := d.Get("cluster_id").(string)
+	nodegroupInput := d.Get("nodegroup_id").(string)
+	nodegroupIDOrName := extractNodeGroupIDForUpgrade(nodegroupInput)
 
 	nodegroup, err := nodegroups.Get(kubernetesClient, clusterIDOrName, d.Id()).Extract()
 	if err != nil {
 		if _, ok := err.(gophercloud.ErrDefault403); ok {
-			nodegroupInput := d.Get("nodegroup_id").(string)
-			nodegroupIDOrName := extractNodeGroupIDForUpgrade(nodegroupInput)
-
+			// default-master nodegroup access is restricted by NHN Cloud policy
 			if nodegroupIDOrName == "default-master" {
-				log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
+				log.Printf("[INFO] default-master nodegroup access is restricted by NHN Cloud policy")
 				return nil
 			}
+			// For other nodegroups, 403 error is unexpected and should be reported
 			return diag.Errorf("Error retrieving NKS nodegroup %s: %s", d.Id(), err)
 		}
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving NKS nodegroup"))
@@ -240,31 +253,47 @@ func resourceKubernetesNodegroupUpgradeV1Update(ctx context.Context, d *schema.R
 
 		log.Printf("[DEBUG] Upgrading NKS nodegroup %s in cluster %s to version %s", nodegroupIDOrName, clusterIDOrName, upgradeOpts.Version)
 
-		_, err = nodegroups.Upgrade(kubernetesClient, clusterIDOrName, nodegroupIDOrName, upgradeOpts).Extract()
+		nodegroup, err := nodegroups.Upgrade(kubernetesClient, clusterIDOrName, nodegroupIDOrName, upgradeOpts).Extract()
 		if err != nil {
 			return diag.Errorf("Error upgrading NKS nodegroup %s in cluster %s: %s", nodegroupIDOrName, clusterIDOrName, err)
 		}
 
+		// For default-master nodegroup, verify upgrade completion via cluster status
+		// because direct nodegroup access is restricted by NHN Cloud policy
 		if nodegroupIDOrName == "default-master" {
-			log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
-			log.Printf("[INFO] Skipping status verification for default-master nodegroup upgrade")
-			return resourceKubernetesNodegroupUpgradeV1Read(ctx, d, meta)
-		}
+			log.Printf("[DEBUG] Waiting for cluster %s to complete default-master nodegroup upgrade", clusterIDOrName)
+			log.Printf("[INFO] Verifying upgrade completion via cluster status due to master nodegroup access restrictions")
 
-		log.Printf("[DEBUG] Waiting for NKS nodegroup %s upgrade to complete", d.Id())
+			clusterUpgradeStateConf := &resource.StateChangeConf{
+				Pending:    []string{"UPDATE_IN_PROGRESS"},
+				Target:     []string{"UPDATE_COMPLETE", "CREATE_COMPLETE"},
+				Refresh:    kubernetesClusterV1StateRefreshFunc(kubernetesClient, clusterIDOrName),
+				Timeout:    d.Timeout(schema.TimeoutUpdate),
+				Delay:      30 * time.Second,
+				MinTimeout: 10 * time.Second,
+			}
 
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"UPDATE_IN_PROGRESS"},
-			Target:     []string{"UPDATE_COMPLETE"},
-			Refresh:    kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, d.Id()),
-			Timeout:    d.Timeout(schema.TimeoutUpdate),
-			Delay:      30 * time.Second,
-			MinTimeout: 10 * time.Second,
-		}
+			_, err = clusterUpgradeStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return diag.Errorf("Error waiting for cluster %s to complete default-master upgrade: %s", clusterIDOrName, err)
+			}
+		} else {
+			// For regular nodegroups, verify upgrade completion via nodegroup status directly
+			log.Printf("[DEBUG] Waiting for nodegroup %s upgrade to complete", nodegroup.UUID)
 
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf("Error waiting for NKS nodegroup %s upgrade to complete: %s", d.Id(), err)
+			nodegroupUpgradeStateConf := &resource.StateChangeConf{
+				Pending:    []string{"UPDATE_IN_PROGRESS"},
+				Target:     []string{"UPDATE_COMPLETE"},
+				Refresh:    kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterIDOrName, nodegroup.UUID),
+				Timeout:    d.Timeout(schema.TimeoutUpdate),
+				Delay:      30 * time.Second,
+				MinTimeout: 10 * time.Second,
+			}
+
+			_, err = nodegroupUpgradeStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return diag.Errorf("Error waiting for nodegroup %s upgrade to complete: %s", nodegroup.UUID, err)
+			}
 		}
 	}
 
