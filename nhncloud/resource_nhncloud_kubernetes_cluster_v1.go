@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -16,11 +17,19 @@ import (
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
 
+func normalizeColonSeparatedList(value string) string {
+	if value == "" {
+		return value
+	}
+	parts := strings.Split(value, ":")
+	sort.Strings(parts)
+	return strings.Join(parts, ":")
+}
+
 func resourceKubernetesClusterV1() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceKubernetesClusterV1Create,
 		ReadContext:   resourceKubernetesClusterV1Read,
-		UpdateContext: resourceKubernetesClusterV1Update,
 		DeleteContext: resourceKubernetesClusterV1Delete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -28,7 +37,6 @@ func resourceKubernetesClusterV1() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
@@ -84,10 +92,9 @@ func resourceKubernetesClusterV1() *schema.Resource {
 			},
 
 			"cluster_template_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OS_MAGNUM_CLUSTER_TEMPLATE", nil),
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 
 			"container_version": {
@@ -122,13 +129,30 @@ func resourceKubernetesClusterV1() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					labels := v.(map[string]interface{})
+					requiredLabels := []string{
+						"availability_zone",
+						"node_image",
+						"boot_volume_type",
+						"boot_volume_size",
+						"cert_manager_api",
+						"ca_enable",
+						"kube_tag",
+						"master_lb_floating_ip_enabled"}
+					for _, key := range requiredLabels {
+						if _, exists := labels[key]; !exists {
+							errors = append(errors, fmt.Errorf("required label '%s' is missing in %s", key, k))
+						}
+					}
+					return
+				},
 			},
 
 			"node_count": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				ForceNew: false,
-				Default:  1,
+				Computed: true,
 			},
 
 			"node_addresses": {
@@ -204,6 +228,7 @@ func resourceKubernetesClusterV1() *schema.Resource {
 						"options": {
 							Type:     schema.TypeMap,
 							Optional: true,
+							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -236,7 +261,14 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		FixedSubnet:       d.Get("fixed_subnet").(string),
 	}
 
-	// Set addons
+	var nodeCount int
+	if v, ok := d.GetOk("node_count"); ok {
+		nodeCount = v.(int)
+	} else {
+		nodeCount = 1
+	}
+	createOpts.NodeCount = &nodeCount
+
 	if v, ok := d.GetOk("addons"); ok {
 		addonList := v.([]interface{})
 		createOpts.Addons = make([]clusters.Addon, len(addonList))
@@ -264,7 +296,6 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error creating nhncloud_kubernetes_cluster_v1: %s", err)
 	}
 
-	// Store the Cluster ID.
 	d.SetId(s.UUID)
 
 	stateConf := &resource.StateChangeConf{
@@ -278,10 +309,10 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 	_, err = stateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return diag.Errorf(
-			"Error waiting for nhncloud_kubernetes_cluster_v1 %s to become ready: %s", s, err)
+			"Error waiting for nhncloud_kubernetes_cluster_v1 %s to become ready: %s", s.UUID, err)
 	}
 
-	log.Printf("[DEBUG] Created nhncloud_kubernetes_cluster_v1 %s", s)
+	log.Printf("[DEBUG] Created nhncloud_kubernetes_cluster_v1 %s", s.UUID)
 
 	return resourceKubernetesClusterV1Read(ctx, d, meta)
 }
@@ -323,10 +354,7 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 
 	log.Printf("[DEBUG] Retrieved nhncloud_kubernetes_cluster_v1 %s: %#v", d.Id(), s)
 
-	labels := s.Labels
-	if err := d.Set("labels", labels); err != nil {
-		return diag.Errorf("Unable to set nhncloud_kubernetes_cluster_v1 labels: %s", err)
-	}
+	apiLabels := s.Labels
 
 	nodeCount, err := getKubernetesDefaultNodegroupNodeCount(kubernetesClient, d.Id())
 	if err != nil {
@@ -341,11 +369,18 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 	d.Set("user_id", s.UserID)
 	d.Set("api_address", s.APIAddress)
 	d.Set("coe_version", s.COEVersion)
-	d.Set("cluster_template_id", s.ClusterTemplateID)
+
+	configTemplateID := d.Get("cluster_template_id").(string)
+	if configTemplateID != "" {
+		d.Set("cluster_template_id", configTemplateID)
+	} else {
+		d.Set("cluster_template_id", "iaas_console")
+	}
+
 	d.Set("container_version", s.ContainerVersion)
 	d.Set("create_timeout", s.CreateTimeout)
 	d.Set("docker_volume_size", s.DockerVolumeSize)
-	d.Set("flavor", s.FlavorID)
+	d.Set("flavor_id", s.FlavorID)
 	d.Set("keypair", s.KeyPair)
 	d.Set("node_count", nodeCount)
 	d.Set("node_addresses", s.NodeAddresses)
@@ -363,51 +398,103 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 		log.Printf("[DEBUG] Unable to set nhncloud_kubernetes_cluster_v1 updated_at: %s", err)
 	}
 
+	if _, ok := d.GetOk("kubeconfig"); !ok {
+		d.Set("kubeconfig", map[string]interface{}{})
+	}
+
+	rawConfig := d.GetRawConfig()
+	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("labels") {
+		configLabelsAttr := rawConfig.GetAttr("labels")
+		if configLabelsAttr.IsKnown() && !configLabelsAttr.IsNull() &&
+			(configLabelsAttr.Type().IsObjectType() || configLabelsAttr.Type().IsMapType()) {
+
+			labelsNeedingNormalization := map[string]bool{
+				"external_subnet_id_list": true,
+			}
+
+			filteredLabels := make(map[string]string)
+			for key, val := range configLabelsAttr.AsValueMap() {
+				if val.IsNull() || !val.IsKnown() {
+					continue
+				}
+				filteredLabels[key] = val.AsString()
+			}
+
+			for key, apiVal := range apiLabels {
+				if _, existsInConfig := filteredLabels[key]; !existsInConfig {
+					continue
+				}
+
+				apiValStr := flattenKubernetesV1LabelValue(apiVal)
+
+				if labelsNeedingNormalization[key] {
+					configValue := filteredLabels[key]
+					normalizedConfigValue := normalizeColonSeparatedList(configValue)
+					normalizedApiValue := normalizeColonSeparatedList(apiValStr)
+					if normalizedConfigValue == normalizedApiValue {
+						filteredLabels[key] = configValue
+					} else {
+						filteredLabels[key] = apiValStr
+					}
+				} else {
+					filteredLabels[key] = apiValStr
+				}
+			}
+
+			if err := d.Set("labels", filteredLabels); err != nil {
+				log.Printf("[DEBUG] Unable to set labels: %s", err)
+			}
+		}
+	}
+
+	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("addons") {
+		configAddonsAttr := rawConfig.GetAttr("addons")
+		if configAddonsAttr.IsKnown() && !configAddonsAttr.IsNull() &&
+			(configAddonsAttr.Type().IsListType() || configAddonsAttr.Type().IsTupleType()) {
+
+			addonsValues := configAddonsAttr.AsValueSlice()
+			normalizedAddons := make([]map[string]interface{}, len(addonsValues))
+
+			for i, addonVal := range addonsValues {
+				if !addonVal.Type().IsObjectType() {
+					continue
+				}
+
+				addonMap := addonVal.AsValueMap()
+				normalizedAddon := make(map[string]interface{})
+
+				if nameVal, exists := addonMap["name"]; exists && nameVal.IsKnown() && !nameVal.IsNull() {
+					normalizedAddon["name"] = nameVal.AsString()
+				}
+				if versionVal, exists := addonMap["version"]; exists && versionVal.IsKnown() && !versionVal.IsNull() {
+					normalizedAddon["version"] = versionVal.AsString()
+				}
+
+				if optionsVal, exists := addonMap["options"]; exists &&
+					optionsVal.IsKnown() && !optionsVal.IsNull() &&
+					(optionsVal.Type().IsMapType() || optionsVal.Type().IsObjectType()) {
+
+					optionsMap := make(map[string]interface{})
+					for k, v := range optionsVal.AsValueMap() {
+						if v.IsKnown() && !v.IsNull() {
+							optionsMap[k] = v.AsString()
+						}
+					}
+					if len(optionsMap) > 0 {
+						normalizedAddon["options"] = optionsMap
+					}
+				}
+
+				normalizedAddons[i] = normalizedAddon
+			}
+
+			if err := d.Set("addons", normalizedAddons); err != nil {
+				log.Printf("[DEBUG] Unable to set addons: %s", err)
+			}
+		}
+	}
+
 	return nil
-}
-
-func resourceKubernetesClusterV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*Config)
-	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
-	if err != nil {
-		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
-	}
-
-	updateOpts := []clusters.UpdateOptsBuilder{}
-
-	if d.HasChange("node_count") {
-		nodeCount := d.Get("node_count").(int)
-		updateOpts = append(updateOpts, clusters.UpdateOpts{
-			Op:    clusters.ReplaceOp,
-			Path:  strings.Join([]string{"/", "node_count"}, ""),
-			Value: nodeCount,
-		})
-	}
-
-	if len(updateOpts) > 0 {
-		log.Printf(
-			"[DEBUG] Updating nhncloud_kubernetes_cluster_v1 %s with options: %#v", d.Id(), updateOpts)
-
-		_, err = clusters.Update(kubernetesClient, d.Id(), updateOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error updating nhncloud_kubernetes_cluster_v1 %s: %s", d.Id(), err)
-		}
-
-		stateConf := &resource.StateChangeConf{
-			Pending:      []string{"UPDATE_IN_PROGRESS"},
-			Target:       []string{"UPDATE_COMPLETE"},
-			Refresh:      kubernetesClusterV1StateRefreshFunc(kubernetesClient, d.Id()),
-			Timeout:      d.Timeout(schema.TimeoutUpdate),
-			Delay:        1 * time.Minute,
-			PollInterval: 20 * time.Second,
-		}
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf(
-				"Error waiting for nhncloud_kubernetes_cluster_v1 %s to become updated: %s", d.Id(), err)
-		}
-	}
-	return resourceKubernetesClusterV1Read(ctx, d, meta)
 }
 
 func resourceKubernetesClusterV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

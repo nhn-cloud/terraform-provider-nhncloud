@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gophercloud/gophercloud"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clusters"
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/nodegroups"
 )
 
@@ -73,12 +73,27 @@ func resourceKubernetesNodeGroupV1() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					labels := v.(map[string]interface{})
+					requiredLabels := []string{
+						"availability_zone",
+						"boot_volume_type",
+						"boot_volume_size",
+						"ca_enable",
+					}
+					for _, key := range requiredLabels {
+						if _, exists := labels[key]; !exists {
+							errors = append(errors, fmt.Errorf("required label '%s' is missing in %s", key, k))
+						}
+					}
+					return
+				},
 			},
 
 			"node_count": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  1,
+				Computed: true,
 			},
 
 			"image_id": {
@@ -154,12 +169,16 @@ func resourceKubernetesNodeGroupV1Create(ctx context.Context, d *schema.Resource
 		FlavorID: d.Get("flavor_id").(string),
 	}
 
-	nodeCount := d.Get("node_count").(int)
-	if nodeCount >= 0 {
-		createOpts.NodeCount = &nodeCount
-		if nodeCount == 0 {
-			kubernetesClient.Microversion = kubernetesV1ZeroNodeCountMicroversion
-		}
+	var nodeCount int
+	if v, ok := d.GetOk("node_count"); ok {
+		nodeCount = v.(int)
+	} else {
+		nodeCount = 1
+	}
+
+	createOpts.NodeCount = &nodeCount
+	if nodeCount == 0 {
+		kubernetesClient.Microversion = kubernetesV1ZeroNodeCountMicroversion
 	}
 
 	log.Printf("[DEBUG] nhncloud_kubernetes_nodegroup_v1 create options: %#v", createOpts)
@@ -208,14 +227,43 @@ func resourceKubernetesNodeGroupV1Read(_ context.Context, d *schema.ResourceData
 
 	nodeGroup, err := nodegroups.Get(kubernetesClient, clusterID, nodeGroupID).Extract()
 	if err != nil {
+		if _, ok := err.(gophercloud.ErrDefault403); ok {
+			if nodeGroupID == "default-master" {
+				log.Printf("[INFO] master nodegroup access is restricted by NHN cloud policy")
+				return nil
+			}
+			return diag.Errorf("Error retrieving nhncloud_kubernetes_nodegroup_v1 %s: %s", d.Id(), err)
+		}
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving nhncloud_kubernetes_nodegroup_v1"))
 	}
 
 	log.Printf("[DEBUG] Retrieved nhncloud_kubernetes_nodegroup_v1 %s: %#v", d.Id(), nodeGroup)
 
-	labels := nodeGroup.Labels
-	if err := d.Set("labels", labels); err != nil {
-		return diag.Errorf("Unable to set nhncloud_kubernetes_nodegroup_v1 labels: %s", err)
+	apiLabels := nodeGroup.Labels
+	rawConfig := d.GetRawConfig()
+	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("labels") {
+		configLabelsAttr := rawConfig.GetAttr("labels")
+		if configLabelsAttr.IsKnown() && !configLabelsAttr.IsNull() &&
+			(configLabelsAttr.Type().IsObjectType() || configLabelsAttr.Type().IsMapType()) {
+
+			filteredLabels := make(map[string]string)
+			for key, val := range configLabelsAttr.AsValueMap() {
+				if val.IsNull() || !val.IsKnown() {
+					continue
+				}
+				filteredLabels[key] = val.AsString()
+			}
+
+			for key, apiVal := range apiLabels {
+				if _, existsInConfig := filteredLabels[key]; existsInConfig {
+					filteredLabels[key] = flattenKubernetesV1LabelValue(apiVal)
+				}
+			}
+
+			if err := d.Set("labels", filteredLabels); err != nil {
+				return diag.Errorf("Unable to set labels: %s", err)
+			}
+		}
 	}
 
 	d.Set("cluster_id", clusterID)
@@ -282,68 +330,6 @@ func resourceKubernetesNodeGroupV1Update(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	if d.HasChange("node_count") {
-		v := d.Get("node_count").(int)
-		var resizeOpts = clusters.ResizeOpts{
-			NodeCount: &v,
-			NodeGroup: nodeGroupID,
-		}
-		_, err = clusters.Resize(kubernetesClient, clusterID, resizeOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error resizing nhncloud_kubernetes_nodegroup_v1 %s: %s", d.Id(), err)
-		}
-
-		stateConf := &resource.StateChangeConf{
-			Pending:      []string{"UPDATE_IN_PROGRESS"},
-			Target:       []string{"UPDATE_COMPLETE"},
-			Refresh:      kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterID, nodeGroupID),
-			Timeout:      d.Timeout(schema.TimeoutUpdate),
-			Delay:        1 * time.Minute,
-			PollInterval: 20 * time.Second,
-		}
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf(
-				"Error waiting for nhncloud_kubernetes_node_group_v1 %s to become updated: %s", d.Id(), err)
-		}
-	}
-
-	// Handle nodegroup version upgrade
-	if d.HasChange("version") {
-		targetVersion := d.Get("version").(string)
-		maxUnavailableNodes := d.Get("num_max_unavailable_nodes").(int)
-		bufferNodes := d.Get("num_buffer_nodes").(int)
-
-		upgradeOpts := nodegroups.UpgradeOpts{
-			Version:                targetVersion,
-			NumMaxUnavailableNodes: maxUnavailableNodes,
-			NumBufferNodes:         bufferNodes,
-		}
-
-		log.Printf("[DEBUG] nhncloud_kubernetes_nodegroup_v1 upgrade options: %#v", upgradeOpts)
-
-		_, err = nodegroups.Upgrade(kubernetesClient, clusterID, nodeGroupID, upgradeOpts).Extract()
-		if err != nil {
-			return diag.Errorf("Error upgrading nhncloud_kubernetes_nodegroup_v1 %s: %s", d.Id(), err)
-		}
-
-		// Wait for upgrade completion (upgrades can take longer, so adjust timeout and intervals)
-		stateConf := &resource.StateChangeConf{
-			Pending:      []string{"UPDATE_IN_PROGRESS"},
-			Target:       []string{"UPDATE_COMPLETE"},
-			Refresh:      kubernetesNodeGroupV1StateRefreshFunc(kubernetesClient, clusterID, nodeGroupID),
-			Timeout:      d.Timeout(schema.TimeoutUpdate),
-			Delay:        2 * time.Minute,  // Increased delay for upgrade start
-			PollInterval: 30 * time.Second, // Increased polling interval
-		}
-		_, err = stateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf(
-				"Error waiting for nhncloud_kubernetes_nodegroup_v1 %s upgrade to complete: %s", d.Id(), err)
-		}
-
-		log.Printf("[DEBUG] nhncloud_kubernetes_nodegroup_v1 upgrade completed: %s", d.Id())
-	}
 	return resourceKubernetesNodeGroupV1Read(ctx, d, meta)
 }
 

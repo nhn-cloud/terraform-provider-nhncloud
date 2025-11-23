@@ -10,18 +10,58 @@ import (
 
 func TestUnitExpandKubernetesV1LabelsMap(t *testing.T) {
 	labels := map[string]interface{}{
-		"foo": "bar",
-		"bar": "baz",
-	}
-
-	expectedLabels := map[string]string{
-		"foo": "bar",
-		"bar": "baz",
+		"foo":                   "bar",
+		"bar":                   "baz",
+		"pods_network_subnet":   "24",
+		"extra_volumes":         `["vol1","vol2"]`,
+		"extra_security_groups": `["sg-123","sg-456"]`,
 	}
 
 	actualLabels, err := expandKubernetesV1LabelsMap(labels)
-	assert.Equal(t, err, nil)
-	assert.Equal(t, expectedLabels, actualLabels)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "bar", actualLabels["foo"])
+	assert.Equal(t, "baz", actualLabels["bar"])
+	assert.Equal(t, "24", actualLabels["pods_network_subnet"])
+
+	extraVolumes, ok := actualLabels["extra_volumes"].([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(extraVolumes))
+	assert.Equal(t, "vol1", extraVolumes[0])
+	assert.Equal(t, "vol2", extraVolumes[1])
+
+	extraSgs, ok := actualLabels["extra_security_groups"].([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(extraSgs))
+	assert.Equal(t, "sg-123", extraSgs[0])
+	assert.Equal(t, "sg-456", extraSgs[1])
+}
+
+func TestUnitExpandKubernetesV1LabelsMapWithVariousTypes(t *testing.T) {
+	labels := map[string]interface{}{
+		"string_value":  "test",
+		"integer_value": 123,
+		"float_value":   45.67,
+		"bool_value":    true,
+		"array_value":   `["a","b","c"]`,
+		"object_value":  `{"key":"value"}`,
+	}
+
+	actualLabels, err := expandKubernetesV1LabelsMap(labels)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "test", actualLabels["string_value"])
+	assert.Equal(t, 123, actualLabels["integer_value"])
+	assert.Equal(t, 45.67, actualLabels["float_value"])
+	assert.Equal(t, true, actualLabels["bool_value"])
+
+	arrayVal, ok := actualLabels["array_value"].([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 3, len(arrayVal))
+	assert.Equal(t, "a", arrayVal[0])
+
+	// Objects remain as JSON strings
+	assert.Equal(t, `{"key":"value"}`, actualLabels["object_value"])
 }
 
 func TestUnitExpandKubernetesV1LabelsString(t *testing.T) {
