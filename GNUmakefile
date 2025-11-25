@@ -3,7 +3,7 @@ GOFMT_FILES?=$$(find . -name '*.go')
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 
 PKG_NAME=nhncloud
-VERSION_STR=1.0.6
+VERSION_STR=1.0.7
 
 OS_IMPLEMENTATION=$(shell uname -s | tr '[:upper:]' '[:lower:]')
 HW_PLATFORM=$(shell uname -m)
@@ -84,5 +84,21 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test local
+# Linux 전용 빌드 타겟
+linux: fmtcheck
+	@echo "\n\033[4m\033[96mBuilding for Linux platforms...\033[0m"
+	@if [ ! -d "dist" ]; then\
+		mkdir -p dist;\
+	fi
+	@echo "\033[97m | Building for linux/amd64...\033[0m"
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o dist/linux_amd64/terraform-provider-$(PKG_NAME)_v$(VERSION_STR)
+	@echo "\033[97m | Building for linux/arm64...\033[0m"
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath -o dist/linux_arm64/terraform-provider-$(PKG_NAME)_v$(VERSION_STR)
+	@echo "\033[92m✓ Linux builds completed successfully!\033[0m"
+
+# Linux 빌드 스크립트 실행
+linux-script:
+	@./build-linux.sh
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test local linux linux-script
 

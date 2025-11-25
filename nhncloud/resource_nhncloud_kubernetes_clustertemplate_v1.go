@@ -10,15 +10,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clustertemplates"
+	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/kubernetes/v1/clustertemplates"
 )
 
-func resourceContainerInfraClusterTemplateV1() *schema.Resource {
+func resourceKubernetesClusterTemplateV1() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceContainerInfraClusterTemplateV1Create,
-		ReadContext:   resourceContainerInfraClusterTemplateV1Read,
-		UpdateContext: resourceContainerInfraClusterTemplateV1Update,
-		DeleteContext: resourceContainerInfraClusterTemplateV1Delete,
+		CreateContext: resourceKubernetesClusterTemplateV1Create,
+		ReadContext:   resourceKubernetesClusterTemplateV1Read,
+		UpdateContext: resourceKubernetesClusterTemplateV1Update,
+		DeleteContext: resourceKubernetesClusterTemplateV1Delete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -238,11 +238,11 @@ func resourceContainerInfraClusterTemplateV1() *schema.Resource {
 	}
 }
 
-func resourceContainerInfraClusterTemplateV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesClusterTemplateV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack container infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
 	// Get boolean parameters that will be passed by reference.
@@ -255,7 +255,7 @@ func resourceContainerInfraClusterTemplateV1Create(ctx context.Context, d *schem
 
 	// Get and check labels map.
 	rawLabels := d.Get("labels").(map[string]interface{})
-	labels, err := expandContainerInfraV1LabelsMap(rawLabels)
+	labels, err := expandKubernetesV1LabelsMap(rawLabels)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -298,32 +298,32 @@ func resourceContainerInfraClusterTemplateV1Create(ctx context.Context, d *schem
 		createOpts.DockerVolumeSize = &dockerVolumeSize
 	}
 
-	log.Printf("[DEBUG] openstack_containerinfra_clustertemplate_v1 create options: %#v", createOpts)
+	log.Printf("[DEBUG] nhncloud_kubernetes_clustertemplate_v1 create options: %#v", createOpts)
 
-	s, err := clustertemplates.Create(containerInfraClient, createOpts).Extract()
+	s, err := clustertemplates.Create(kubernetesClient, createOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Error creating openstack_containerinfra_clustertemplate_v1: %s", err)
+		return diag.Errorf("Error creating nhncloud_kubernetes_clustertemplate_v1: %s", err)
 	}
 
 	d.SetId(s.UUID)
 
-	log.Printf("[DEBUG] Created openstack_containerinfra_clustertemplate_v1 %s: %#v", s.UUID, s)
-	return resourceContainerInfraClusterTemplateV1Read(ctx, d, meta)
+	log.Printf("[DEBUG] Created nhncloud_kubernetes_clustertemplate_v1 %s: %#v", s.UUID, s)
+	return resourceKubernetesClusterTemplateV1Read(ctx, d, meta)
 }
 
-func resourceContainerInfraClusterTemplateV1Read(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesClusterTemplateV1Read(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack container infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
-	s, err := clustertemplates.Get(containerInfraClient, d.Id()).Extract()
+	s, err := clustertemplates.Get(kubernetesClient, d.Id()).Extract()
 	if err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error retrieving openstack_containerinfra_clustertemplate_v1"))
+		return diag.FromErr(CheckDeleted(d, err, "Error retrieving nhncloud_kubernetes_clustertemplate_v1"))
 	}
 
-	log.Printf("[DEBUG] Retrieved openstack_containerinfra_clustertemplate_v1 %s: %#v", d.Id(), s)
+	log.Printf("[DEBUG] Retrieved nhncloud_kubernetes_clustertemplate_v1 %s: %#v", d.Id(), s)
 
 	if err := d.Set("labels", s.Labels); err != nil {
 		return diag.Errorf("Unable to set labels: %s", err)
@@ -361,199 +361,199 @@ func resourceContainerInfraClusterTemplateV1Read(_ context.Context, d *schema.Re
 	d.Set("hidden", s.Hidden)
 
 	if err := d.Set("created_at", s.CreatedAt.Format(time.RFC3339)); err != nil {
-		log.Printf("[DEBUG] Unable to set openstack_containerinfra_clustertemplate_v1 created_at: %s", err)
+		log.Printf("[DEBUG] Unable to set nhncloud_kubernetes_clustertemplate_v1 created_at: %s", err)
 	}
 	if err := d.Set("updated_at", s.UpdatedAt.Format(time.RFC3339)); err != nil {
-		log.Printf("[DEBUG] Unable to set openstack_containerinfra_clustertemplate_v1 updated_at: %s", err)
+		log.Printf("[DEBUG] Unable to set nhncloud_kubernetes_clustertemplate_v1 updated_at: %s", err)
 	}
 
 	return nil
 }
 
-func resourceContainerInfraClusterTemplateV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesClusterTemplateV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack container infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
 	updateOpts := []clustertemplates.UpdateOptsBuilder{}
 
 	if d.HasChange("name") {
 		v := d.Get("name").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "name", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "name", v)
 	}
 
 	if d.HasChange("apiserver_port") {
 		apiServerPort := d.Get("apiserver_port").(int)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 			updateOpts, "apiserver_port", apiServerPort)
 	}
 
 	if d.HasChange("coe") {
 		v := d.Get("coe").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "coe", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "coe", v)
 	}
 
 	if d.HasChange("cluster_distro") {
 		v := d.Get("cluster_distro").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "cluster_distro", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "cluster_distro", v)
 	}
 
 	if d.HasChange("dns_nameserver") {
 		v := d.Get("dns_nameserver").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "dns_nameserver", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "dns_nameserver", v)
 	}
 
 	if d.HasChange("docker_storage_driver") {
 		v := d.Get("docker_storage_driver").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "docker_storage_driver", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "docker_storage_driver", v)
 	}
 
 	if d.HasChange("docker_volume_size") {
 		dockerVolumeSize := d.Get("docker_volume_size").(int)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 			updateOpts, "docker_volume_size", dockerVolumeSize)
 	}
 
 	if d.HasChange("external_network_id") {
 		v := d.Get("external_network_id").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "external_network_id", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "external_network_id", v)
 	}
 
 	if d.HasChange("fixed_network") {
 		v := d.Get("fixed_network").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "fixed_network", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "fixed_network", v)
 	}
 
 	if d.HasChange("fixed_subnet") {
 		v := d.Get("fixed_subnet").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "fixed_subnet", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "fixed_subnet", v)
 	}
 
 	if d.HasChange("flavor") {
 		v := d.Get("flavor").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "flavor_id", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "flavor_id", v)
 	}
 
 	if d.HasChange("master_flavor") {
 		v := d.Get("master_flavor").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "master_flavor_id", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "master_flavor_id", v)
 	}
 
 	if d.HasChange("floating_ip_enabled") {
 		v := d.Get("floating_ip_enabled").(bool)
 		floatingIPEnabled := strconv.FormatBool(v)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 			updateOpts, "floating_ip_enabled", floatingIPEnabled)
 	}
 
 	if d.HasChange("http_proxy") {
 		v := d.Get("http_proxy").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "http_proxy", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "http_proxy", v)
 	}
 
 	if d.HasChange("https_proxy") {
 		v := d.Get("https_proxy").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "https_proxy", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "https_proxy", v)
 	}
 
 	if d.HasChange("image") {
 		v := d.Get("image").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "image_id", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "image_id", v)
 	}
 
 	if d.HasChange("insecure_registry") {
 		v := d.Get("insecure_registry").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "insecure_registry", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "insecure_registry", v)
 	}
 
 	if d.HasChange("keypair_id") {
 		v := d.Get("keypair_id").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "keypair_id", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "keypair_id", v)
 	}
 
 	if d.HasChange("labels") {
 		rawLabels := d.Get("labels").(map[string]interface{})
-		v, err := expandContainerInfraV1LabelsString(rawLabels)
+		v, err := expandKubernetesV1LabelsString(rawLabels)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "labels", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "labels", v)
 	}
 
 	if d.HasChange("master_lb_enabled") {
 		v := d.Get("master_lb_enabled").(bool)
 		masterLBEnabled := strconv.FormatBool(v)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 			updateOpts, "master_lb_enabled", masterLBEnabled)
 	}
 
 	if d.HasChange("network_driver") {
 		v := d.Get("network_driver").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "network_driver", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "network_driver", v)
 	}
 
 	if d.HasChange("no_proxy") {
 		v := d.Get("no_proxy").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "no_proxy", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "no_proxy", v)
 	}
 
 	if d.HasChange("public") {
 		v := d.Get("public").(bool)
 		public := strconv.FormatBool(v)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "public", public)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "public", public)
 	}
 
 	if d.HasChange("registry_enabled") {
 		v := d.Get("registry_enabled").(bool)
 		registryEnabled := strconv.FormatBool(v)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(
 			updateOpts, "registry_enabled", registryEnabled)
 	}
 
 	if d.HasChange("server_type") {
 		v := d.Get("server_type").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "server_type", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "server_type", v)
 	}
 
 	if d.HasChange("tls_disabled") {
 		v := d.Get("tls_disabled").(bool)
 		tlsDisabled := strconv.FormatBool(v)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "tls_disabled", tlsDisabled)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "tls_disabled", tlsDisabled)
 	}
 
 	if d.HasChange("volume_driver") {
 		v := d.Get("volume_driver").(string)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "volume_driver", v)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "volume_driver", v)
 	}
 
 	if d.HasChange("hidden") {
 		v := d.Get("hidden").(bool)
 		hidden := strconv.FormatBool(v)
-		updateOpts = containerInfraClusterTemplateV1AppendUpdateOpts(updateOpts, "hidden", hidden)
+		updateOpts = kubernetesClusterTemplateV1AppendUpdateOpts(updateOpts, "hidden", hidden)
 	}
 
 	log.Printf(
-		"[DEBUG] Updating openstack_containerinfra_clustertemplate_v1 %s with options: %#v", d.Id(), updateOpts)
+		"[DEBUG] Updating nhncloud_kubernetes_clustertemplate_v1 %s with options: %#v", d.Id(), updateOpts)
 
-	_, err = clustertemplates.Update(containerInfraClient, d.Id(), updateOpts).Extract()
+	_, err = clustertemplates.Update(kubernetesClient, d.Id(), updateOpts).Extract()
 	if err != nil {
-		return diag.Errorf("Error updating openstack_containerinfra_clustertemplate_v1 %s: %s", d.Id(), err)
+		return diag.Errorf("Error updating nhncloud_kubernetes_clustertemplate_v1 %s: %s", d.Id(), err)
 	}
 
-	return resourceContainerInfraClusterTemplateV1Read(ctx, d, meta)
+	return resourceKubernetesClusterTemplateV1Read(ctx, d, meta)
 }
 
-func resourceContainerInfraClusterTemplateV1Delete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceKubernetesClusterTemplateV1Delete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
-	containerInfraClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
+	kubernetesClient, err := config.ContainerInfraV1Client(GetRegion(d, config))
 	if err != nil {
-		return diag.Errorf("Error creating OpenStack container infra client: %s", err)
+		return diag.Errorf("Error creating NHN Cloud kubernetes client: %s", err)
 	}
 
-	if err := clustertemplates.Delete(containerInfraClient, d.Id()).ExtractErr(); err != nil {
-		return diag.FromErr(CheckDeleted(d, err, "Error deleting openstack_containerinfra_clustertemplate_v1"))
+	if err := clustertemplates.Delete(kubernetesClient, d.Id()).ExtractErr(); err != nil {
+		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_kubernetes_clustertemplate_v1"))
 	}
 
 	return nil

@@ -182,11 +182,11 @@ func testAccPreCheckKeyManager(t *testing.T) {
 	}
 }
 
-func testAccPreCheckContainerInfra(t *testing.T) {
+func testAccPreCheckKubernetes(t *testing.T) {
 	testAccPreCheckRequiredEnvVars(t)
 
 	if osContainerInfraEnvironment == "" {
-		t.Skip("This environment does not support Container Infra tests")
+		t.Skip("This environment does not support Kubernetes tests")
 	}
 
 	if osMagnumImage == "" {
@@ -196,6 +196,10 @@ func testAccPreCheckContainerInfra(t *testing.T) {
 	if osMagnumFlavor == "" {
 		t.Fatal("OS_MAGNUM_FLAVOR must be set for acceptance tests")
 	}
+}
+
+func testAccPreCheckContainerInfra(t *testing.T) {
+	testAccPreCheckKubernetes(t)
 }
 
 func testAccPreCheckSFS(t *testing.T) {
