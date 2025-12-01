@@ -14,12 +14,6 @@ import (
 	"github.com/gophercloud/utils/terraform/mutexkv"
 )
 
-// Use openstackbase.Config as the base/foundation of this provider's
-// Config struct.
-type Config struct {
-	auth.Config
-}
-
 // Provider returns a schema.Provider for NHN Cloud.
 func Provider() *schema.Provider {
 	provider := &schema.Provider{
@@ -428,6 +422,9 @@ func Provider() *schema.Provider {
 			"nhncloud_keymanager_order_v1":                       resourceKeyManagerOrderV1(),
 			"nhncloud_networking_routingtable_v2":                resourceNetworkingRoutingtableV2(),
 			"nhncloud_networking_routingtable_attach_gateway_v2": resourceNetworkingRoutingtableAttachGatewayV2(),
+			"nhncloud_nas_storage_volume_v1":                     resourceNhncloudNasStorageVolumeV1(),
+			"nhncloud_nas_storage_volume_interface_v1":           resourceNhncloudNasStorageVolumeInterfaceV1(),
+			"nhncloud_nas_storage_volume_mirror_v1":              resourceNhncloudNasStorageVolumeMirrorV1(),
 		},
 	}
 
@@ -539,7 +536,7 @@ func configureProvider(d *schema.ResourceData, terraformVersion string) (interfa
 	}
 
 	config := Config{
-		auth.Config{
+		Config: auth.Config{
 			CACertFile:                  d.Get("cacert_file").(string),
 			ClientCertFile:              d.Get("cert").(string),
 			ClientKeyFile:               d.Get("key").(string),
