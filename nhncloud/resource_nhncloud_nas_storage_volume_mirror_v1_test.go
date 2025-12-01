@@ -76,7 +76,7 @@ func testAccCheckNasStorageVolumeMirrorV1Destroy(s *terraform.State) error {
 			continue
 		}
 
-		volume, err := volumes.GetVolume(nasStorageClient, rs.Primary.Attributes["volume_id"]).Extract()
+		volume, err := volumes.Get(nasStorageClient, rs.Primary.Attributes["volume_id"]).Extract()
 		if err == nil && len(volume.Mirrors) > 0 {
 			return fmt.Errorf("Volume mirror still exists: %s", rs.Primary.ID)
 		}
@@ -107,7 +107,7 @@ func testAccCheckNasStorageVolumeMirrorV1Exists(n string, mirror *volumes.Mirror
 			return fmt.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 		}
 
-		volume, err := volumes.GetVolume(nasStorageClient, volumeID).Extract()
+		volume, err := volumes.Get(nasStorageClient, volumeID).Extract()
 		if err != nil {
 			return fmt.Errorf("Error getting NHN Cloud NAS storage volume %s: %s", volumeID, err)
 		}
@@ -135,7 +135,7 @@ func removeVolumeCreatedByMirror(mirror volumes.Mirror) error {
 		return fmt.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	err = volumes.DeleteVolume(nasStorageClient, mirror.DstVolumeID).ExtractErr()
+	err = volumes.Delete(nasStorageClient, mirror.DstVolumeID).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("Error deleting NHN Cloud NAS storage volume %s: %s", mirror.DstVolumeID, err)
 	}
@@ -150,7 +150,7 @@ Loop:
 	for {
 		select {
 		case <-ticker.C:
-			_, err := volumes.GetVolume(nasStorageClient, mirror.DstVolumeID).Extract()
+			_, err := volumes.Get(nasStorageClient, mirror.DstVolumeID).Extract()
 			if err == nil {
 				continue
 			}

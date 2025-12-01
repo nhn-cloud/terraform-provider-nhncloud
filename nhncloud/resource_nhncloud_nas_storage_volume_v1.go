@@ -197,7 +197,7 @@ func resourceNhncloudNasStorageVolumeV1Create(ctx context.Context, d *schema.Res
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	createOpts := &volumes.CreateVolumeOpts{
+	createOpts := &volumes.CreateOpts{
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		SizeGb:         d.Get("size_gb").(int),
@@ -207,7 +207,7 @@ func resourceNhncloudNasStorageVolumeV1Create(ctx context.Context, d *schema.Res
 		SnapshotPolicy: resourceToNasStorageVolumeSnapshotPolicy(d),
 	}
 
-	v, err := volumes.CreateVolume(nasStorageClient, createOpts).Extract()
+	v, err := volumes.Create(nasStorageClient, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating NHN Cloud NAS storage volume: %s", err)
 	}
@@ -228,7 +228,7 @@ func resourceNhncloudNasStorageVolumeV1Read(ctx context.Context, d *schema.Resou
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	v, err := volumes.GetVolume(nasStorageClient, d.Id()).Extract()
+	v, err := volumes.Get(nasStorageClient, d.Id()).Extract()
 	if err != nil {
 		return diag.FromErr(CheckDeleted(d, err, "Error retrieving nhncloud_nas_storage_volume_v1"))
 	}
@@ -256,7 +256,7 @@ func resourceNhncloudNasStorageVolumeV1Update(ctx context.Context, d *schema.Res
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	updateOpts := &volumes.UpdateVolumeOpts{}
+	updateOpts := &volumes.UpdateOpts{}
 
 	if d.HasChange("description") {
 		description := d.Get("description").(string)
@@ -278,7 +278,7 @@ func resourceNhncloudNasStorageVolumeV1Update(ctx context.Context, d *schema.Res
 		snapshotPolicy := resourceToUpdateNasStorageVolumeSnapshotPolicyOpts(ctx, d)
 		updateOpts.SnapshotPolicy = snapshotPolicy
 	}
-	_, err = volumes.UpdateVolume(nasStorageClient, d.Id(), updateOpts).Extract()
+	_, err = volumes.Update(nasStorageClient, d.Id(), updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating NHN Cloud NAS storage volume: %s", err)
 	}
@@ -298,7 +298,7 @@ func resourceNhncloudNasStorageVolumeV1Delete(ctx context.Context, d *schema.Res
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	if err := volumes.DeleteVolume(nasStorageClient, d.Id()).ExtractErr(); err != nil {
+	if err := volumes.Delete(nasStorageClient, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_nas_storage_volume_v1"))
 	}
 
@@ -545,7 +545,7 @@ func waitForDeleteNhncloudNasStorageVolume(ctx context.Context, d *schema.Resour
 
 func nasStorageVolumeV1RefreshFunc(client *gophercloud.ServiceClient, id string) retry.StateRefreshFunc {
 	return func() (any, string, error) {
-		v, err := volumes.GetVolume(client, id).Extract()
+		v, err := volumes.Get(client, id).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return v, "DELETED", nil

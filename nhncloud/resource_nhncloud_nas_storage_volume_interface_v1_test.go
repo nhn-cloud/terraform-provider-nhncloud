@@ -51,7 +51,7 @@ func testAccCheckNasStorageVolumeInterfaceV1Destroy(s *terraform.State) error {
 			continue
 		}
 
-		volume, err := volumes.GetVolume(nasStorageClient, rs.Primary.Attributes["volume_id"]).Extract()
+		volume, err := volumes.Get(nasStorageClient, rs.Primary.Attributes["volume_id"]).Extract()
 		if err == nil && len(volume.Interfaces) > 0 {
 			return fmt.Errorf("Volume interface still exists: %s", rs.Primary.ID)
 		}
@@ -82,7 +82,7 @@ func testAccCheckNasStorageVolumeInterfaceV1Exists(n string, vInterface *volumes
 			return fmt.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 		}
 
-		volume, err := volumes.GetVolume(nasStorageClient, volumeID).Extract()
+		volume, err := volumes.Get(nasStorageClient, volumeID).Extract()
 		if err != nil {
 			return fmt.Errorf("Error getting NHN Cloud NAS storage volume %s: %s", volumeID, err)
 		}

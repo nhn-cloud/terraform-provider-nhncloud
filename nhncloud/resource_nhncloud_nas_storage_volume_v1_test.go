@@ -80,7 +80,7 @@ func testAccCheckNasStorageVolumeV1Destroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := volumes.GetVolume(nasStorageClient, rs.Primary.ID).Extract()
+		_, err := volumes.Get(nasStorageClient, rs.Primary.ID).Extract()
 		if err == nil {
 			return fmt.Errorf("Volume still exists: %s", rs.Primary.ID)
 		}
@@ -110,7 +110,7 @@ func testAccCheckNasStorageVolumeV1Exists(n string, volume *volumes.Volume) reso
 			return fmt.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 		}
 
-		found, err := volumes.GetVolume(nasStorageClient, rs.Primary.ID).Extract()
+		found, err := volumes.Get(nasStorageClient, rs.Primary.ID).Extract()
 		if err != nil {
 			return err
 		}

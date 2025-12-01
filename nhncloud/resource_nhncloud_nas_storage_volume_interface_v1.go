@@ -80,11 +80,11 @@ func resourceNhncloudNasStorageVolumeInterfaceV1Create(ctx context.Context, d *s
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	createOpts := &volumes.CreateInterfaceOpts{
+	createOpts := &volumes.ConnectInterfaceOpts{
 		SubnetID: d.Get("subnet_id").(string),
 	}
 
-	vInterface, err := volumes.CreateInterface(nasStorageClient, volumeID, createOpts).Extract()
+	vInterface, err := volumes.ConnectInterface(nasStorageClient, volumeID, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating NHN Cloud NAS storage volume interface: %s", err)
 	}
@@ -201,7 +201,7 @@ func nasStorageVolumeInterfaceV1RefreshFunc(client *gophercloud.ServiceClient, v
 }
 
 func getNhncloudNasStorageVolumeInterfaceV1(client *gophercloud.ServiceClient, volumeID, interfaceID string) (*volumes.Interface, error) {
-	volume, err := volumes.GetVolume(client, volumeID).Extract()
+	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
 		return nil, err
 	}

@@ -246,7 +246,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Create(ctx context.Context, d *sche
 	}
 
 	dstVolume := d.Get("dst_volume").([]any)[0].(map[string]any)
-	createOpts := &volumes.CreateMirrorOpts{
+	createOpts := &volumes.SetReplicationOpts{
 		DstRegion:   d.Get("dst_region").(string),
 		DstTenantID: d.Get("dst_tenant_id").(string),
 		DstVolume: &volumes.DstVolumeOpts{
@@ -260,7 +260,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Create(ctx context.Context, d *sche
 		},
 	}
 
-	v, err := volumes.CreateMirror(nasStorageClient, srcVolumeID, createOpts).Extract()
+	v, err := volumes.SetReplication(nasStorageClient, srcVolumeID, createOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error creating NHN Cloud NAS storage volume mirror: %s", err)
 	}
@@ -320,7 +320,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Update(ctx context.Context, d *sche
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	updateOpts := &volumes.UpdateVolumeOpts{}
+	updateOpts := &volumes.UpdateOpts{}
 
 	if d.HasChange("dst_volume.0.description") {
 		description := d.Get("dst_volume.0.description").(string)
@@ -328,7 +328,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Update(ctx context.Context, d *sche
 	}
 
 	dstVolumeID := d.Get("dst_volume_id").(string)
-	_, err = volumes.UpdateVolume(nasStorageClient, dstVolumeID, updateOpts).Extract()
+	_, err = volumes.Update(nasStorageClient, dstVolumeID, updateOpts).Extract()
 	if err != nil {
 		return diag.Errorf("Error updating NHN Cloud NAS storage volume mirror: %s", err)
 	}
@@ -354,7 +354,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Delete(ctx context.Context, d *sche
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
-	if err := volumes.DeleteMirror(nasStorageClient, srcVolumeID, d.Id()).ExtractErr(); err != nil {
+	if err := volumes.DisableReplication(nasStorageClient, srcVolumeID, d.Id()).ExtractErr(); err != nil {
 		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_nas_storage_volume_mirror_v1"))
 	}
 
@@ -470,7 +470,7 @@ func waitForDeleteNhncloudNasStorageVolumeMirror(ctx context.Context, d *schema.
 
 func nasStorageVolumeMirrorV1RefreshFunc(client *gophercloud.ServiceClient, volumeID, mirrorID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		m, err := volumes.GetMirrorStat(client, volumeID, mirrorID).Extract()
+		m, err := volumes.GetReplicationStat(client, volumeID, mirrorID).Extract()
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return m, "DELETED", nil
@@ -496,7 +496,7 @@ func getNhncloudNasStorageVolumeMirrorV1(d *schema.ResourceData, config *Config)
 	}
 
 	srcVolumeID := d.Get("src_volume_id").(string)
-	volume, err := volumes.GetVolume(nasStorageClient, srcVolumeID).Extract()
+	volume, err := volumes.Get(nasStorageClient, srcVolumeID).Extract()
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +517,7 @@ func getNhncloudNasStorageVolumeMirrorV1DstVolume(config *Config, dstRegionID, d
 		return nil, err
 	}
 
-	volume, err := volumes.GetVolume(nasStorageClient, dstVolumeID).Extract()
+	volume, err := volumes.Get(nasStorageClient, dstVolumeID).Extract()
 	if err != nil {
 		return nil, err
 	}
