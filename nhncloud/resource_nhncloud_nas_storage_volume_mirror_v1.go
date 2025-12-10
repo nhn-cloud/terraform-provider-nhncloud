@@ -498,9 +498,9 @@ func nasStorageVolumeMirrorV1RefreshFunc(client *gophercloud.ServiceClient, volu
 		}
 
 		if m.Status == "error" {
-			return m, m.Status, fmt.Errorf("The volume mirror is in error status. " +
-				"Please check with your cloud admin or check the NAS Storage. " +
-				"API logs to see why this error occurred.")
+			return m, m.Status, fmt.Errorf("The volume mirror is in error status: " +
+				"Please check with your cloud admin or check the NAS Storage " +
+				"API logs to see why this error occurred")
 		}
 
 		return m, m.Status, nil

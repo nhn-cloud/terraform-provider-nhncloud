@@ -192,9 +192,9 @@ func nasStorageVolumeInterfaceV1RefreshFunc(client *gophercloud.ServiceClient, v
 
 		status := vInterface.Status
 		if status == "error" {
-			return vInterface, status, fmt.Errorf("The volume interface is in error status. " +
-				"Please check with your cloud admin or check the NAS Storage. " +
-				"API logs to see why this error occurred.")
+			return vInterface, status, fmt.Errorf("The volume interface is in error status: " +
+				"Please check with your cloud admin or check the NAS Storage " +
+				"API logs to see why this error occurred")
 		}
 
 		return vInterface, status, nil
