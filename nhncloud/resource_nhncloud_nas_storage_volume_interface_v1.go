@@ -15,11 +15,11 @@ import (
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/nas/v1/volumes"
 )
 
-func resourceNhncloudNasStorageVolumeInterfaceV1() *schema.Resource {
+func resourceNasStorageVolumeInterfaceV1() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNhncloudNasStorageVolumeInterfaceV1Create,
-		ReadContext:   resourceNhncloudNasStorageVolumeInterfaceV1Read,
-		DeleteContext: resourceNhncloudNasStorageVolumeInterfaceV1Delete,
+		CreateContext: resourceNasStorageVolumeInterfaceV1Create,
+		ReadContext:   resourceNasStorageVolumeInterfaceV1Read,
+		DeleteContext: resourceNasStorageVolumeInterfaceV1Delete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -68,7 +68,7 @@ func resourceNhncloudNasStorageVolumeInterfaceV1() *schema.Resource {
 	}
 }
 
-func resourceNhncloudNasStorageVolumeInterfaceV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeInterfaceV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 
 	volumeID := d.Get("volume_id").(string)
@@ -91,15 +91,15 @@ func resourceNhncloudNasStorageVolumeInterfaceV1Create(ctx context.Context, d *s
 
 	d.SetId(vInterface.ID)
 
-	err = waitForCreateNhncloudNasStorageVolumeInterface(ctx, d, nasStorageClient, volumeID, vInterface.ID)
+	err = waitForCreateNasStorageVolumeInterface(ctx, d, nasStorageClient, volumeID, vInterface.ID)
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume %s interface %s to become ready: %s", volumeID, vInterface.ID, err)
 	}
 
-	return resourceNhncloudNasStorageVolumeInterfaceV1Read(ctx, d, meta)
+	return resourceNasStorageVolumeInterfaceV1Read(ctx, d, meta)
 }
 
-func resourceNhncloudNasStorageVolumeInterfaceV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeInterfaceV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	nasStorageClient, err := config.NasStorageV1Client(GetRegion(d, config))
 	if err != nil {
@@ -107,7 +107,7 @@ func resourceNhncloudNasStorageVolumeInterfaceV1Read(ctx context.Context, d *sch
 	}
 
 	volumeID := d.Get("volume_id").(string)
-	vInterface, err := getNhncloudNasStorageVolumeInterfaceV1(nasStorageClient, volumeID, d.Id())
+	vInterface, err := getNasStorageVolumeInterfaceV1(nasStorageClient, volumeID, d.Id())
 	if err != nil {
 		return diag.FromErr(CheckDeleted(d, err, fmt.Sprintf("Error getting NHN Cloud NAS storage volume %s interface", volumeID)))
 	}
@@ -123,7 +123,7 @@ func resourceNhncloudNasStorageVolumeInterfaceV1Read(ctx context.Context, d *sch
 	return nil
 }
 
-func resourceNhncloudNasStorageVolumeInterfaceV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeInterfaceV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 
 	volumeID := d.Get("volume_id").(string)
@@ -139,7 +139,7 @@ func resourceNhncloudNasStorageVolumeInterfaceV1Delete(ctx context.Context, d *s
 		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_nas_storage_volume_interface_v1"))
 	}
 
-	err = waitForDeleteNhncloudNasStorageVolumeInterface(ctx, d, nasStorageClient, volumeID, d.Id())
+	err = waitForDeleteNasStorageVolumeInterface(ctx, d, nasStorageClient, volumeID, d.Id())
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume %s interface %s to delete: %s", volumeID, d.Id(), err)
 	}
@@ -147,7 +147,7 @@ func resourceNhncloudNasStorageVolumeInterfaceV1Delete(ctx context.Context, d *s
 	return nil
 }
 
-func waitForCreateNhncloudNasStorageVolumeInterface(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, interfaceID string) error {
+func waitForCreateNasStorageVolumeInterface(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, interfaceID string) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"BUILDING"},
 		Target:     []string{"ACTIVE"},
@@ -161,7 +161,7 @@ func waitForCreateNhncloudNasStorageVolumeInterface(ctx context.Context, d *sche
 	return err
 }
 
-func waitForDeleteNhncloudNasStorageVolumeInterface(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, interfaceID string) error {
+func waitForDeleteNasStorageVolumeInterface(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, interfaceID string) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"ACTIVE", "DELETING"},
 		Target:     []string{"DELETED"},
@@ -177,7 +177,7 @@ func waitForDeleteNhncloudNasStorageVolumeInterface(ctx context.Context, d *sche
 
 func nasStorageVolumeInterfaceV1RefreshFunc(client *gophercloud.ServiceClient, volumeID, interfaceID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		vInterface, err := getNhncloudNasStorageVolumeInterfaceV1(client, volumeID, interfaceID)
+		vInterface, err := getNasStorageVolumeInterfaceV1(client, volumeID, interfaceID)
 		if err != nil {
 			if _, ok := err.(gophercloud.ErrDefault404); ok {
 				return &volumes.Interface{}, "DELETED", nil
@@ -200,7 +200,7 @@ func nasStorageVolumeInterfaceV1RefreshFunc(client *gophercloud.ServiceClient, v
 	}
 }
 
-func getNhncloudNasStorageVolumeInterfaceV1(client *gophercloud.ServiceClient, volumeID, interfaceID string) (*volumes.Interface, error) {
+func getNasStorageVolumeInterfaceV1(client *gophercloud.ServiceClient, volumeID, interfaceID string) (*volumes.Interface, error) {
 	volume, err := volumes.Get(client, volumeID).Extract()
 	if err != nil {
 		return nil, err

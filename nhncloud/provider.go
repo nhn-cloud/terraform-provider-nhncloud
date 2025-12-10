@@ -422,9 +422,9 @@ func Provider() *schema.Provider {
 			"nhncloud_keymanager_order_v1":                       resourceKeyManagerOrderV1(),
 			"nhncloud_networking_routingtable_v2":                resourceNetworkingRoutingtableV2(),
 			"nhncloud_networking_routingtable_attach_gateway_v2": resourceNetworkingRoutingtableAttachGatewayV2(),
-			"nhncloud_nas_storage_volume_v1":                     resourceNhncloudNasStorageVolumeV1(),
-			"nhncloud_nas_storage_volume_interface_v1":           resourceNhncloudNasStorageVolumeInterfaceV1(),
-			"nhncloud_nas_storage_volume_mirror_v1":              resourceNhncloudNasStorageVolumeMirrorV1(),
+			"nhncloud_nas_storage_volume_v1":                     resourceNasStorageVolumeV1(),
+			"nhncloud_nas_storage_volume_interface_v1":           resourceNasStorageVolumeInterfaceV1(),
+			"nhncloud_nas_storage_volume_mirror_v1":              resourceNasStorageVolumeMirrorV1(),
 		},
 	}
 

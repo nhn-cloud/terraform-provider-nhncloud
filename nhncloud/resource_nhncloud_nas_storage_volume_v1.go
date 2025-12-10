@@ -14,12 +14,12 @@ import (
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/nas/v1/volumes"
 )
 
-func resourceNhncloudNasStorageVolumeV1() *schema.Resource {
+func resourceNasStorageVolumeV1() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNhncloudNasStorageVolumeV1Create,
-		ReadContext:   resourceNhncloudNasStorageVolumeV1Read,
-		UpdateContext: resourceNhncloudNasStorageVolumeV1Update,
-		DeleteContext: resourceNhncloudNasStorageVolumeV1Delete,
+		CreateContext: resourceNasStorageVolumeV1Create,
+		ReadContext:   resourceNasStorageVolumeV1Read,
+		UpdateContext: resourceNasStorageVolumeV1Update,
+		DeleteContext: resourceNasStorageVolumeV1Delete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -190,7 +190,7 @@ func resourceNhncloudNasStorageVolumeV1() *schema.Resource {
 	}
 }
 
-func resourceNhncloudNasStorageVolumeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	nasStorageClient, err := config.NasStorageV1Client(GetRegion(d, config))
 	if err != nil {
@@ -201,7 +201,7 @@ func resourceNhncloudNasStorageVolumeV1Create(ctx context.Context, d *schema.Res
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		SizeGb:         d.Get("size_gb").(int),
-		ACL:            resourceNhncloudNasStorageVolumeACL(d),
+		ACL:            resourceToNasStorageVolumeACL(d),
 		Encryption:     resourceToNasStorageVolumeEncryption(d),
 		MountProtocol:  resourceToNasStorageVolumeMountProtocol(d),
 		SnapshotPolicy: resourceToNasStorageVolumeSnapshotPolicy(d),
@@ -213,15 +213,15 @@ func resourceNhncloudNasStorageVolumeV1Create(ctx context.Context, d *schema.Res
 	}
 	d.SetId(v.ID)
 
-	err = waitForCreateNhncloudNasStorageVolume(ctx, d, nasStorageClient, v.ID)
+	err = waitForCreateNasStorageVolume(ctx, d, nasStorageClient, v.ID)
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume %s to become ready: %s", v.ID, err)
 	}
 
-	return resourceNhncloudNasStorageVolumeV1Read(ctx, d, meta)
+	return resourceNasStorageVolumeV1Read(ctx, d, meta)
 }
 
-func resourceNhncloudNasStorageVolumeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	nasStorageClient, err := config.NasStorageV1Client(GetRegion(d, config))
 	if err != nil {
@@ -240,16 +240,16 @@ func resourceNhncloudNasStorageVolumeV1Read(ctx context.Context, d *schema.Resou
 	d.Set("project_id", v.ProjectID)
 	d.Set("tenant_id", v.TenantID)
 	d.Set("acl", v.ACL)
-	d.Set("encryption", flattenNhncloudNasStorageVolumeEncryption(v.Encryption))
-	d.Set("mount_protocol", flattenNhncloudNasStorageVolumeMountProtocol(v.MountProtocol))
-	d.Set("snapshot_policy", flattenNhncloudNasStorageVolumeSnapshotPolicy(v.SnapshotPolicy))
+	d.Set("encryption", flattenNasStorageVolumeEncryption(v.Encryption))
+	d.Set("mount_protocol", flattenNasStorageVolumeMountProtocol(v.MountProtocol))
+	d.Set("snapshot_policy", flattenNasStorageVolumeSnapshotPolicy(v.SnapshotPolicy))
 	d.Set("created_at", v.CreatedAt)
 	d.Set("updated_at", v.UpdatedAt)
 
 	return nil
 }
 
-func resourceNhncloudNasStorageVolumeV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	nasStorageClient, err := config.NasStorageV1Client(GetRegion(d, config))
 	if err != nil {
@@ -267,7 +267,7 @@ func resourceNhncloudNasStorageVolumeV1Update(ctx context.Context, d *schema.Res
 		updateOpts.SizeGb = &sizeGb
 	}
 	if d.HasChange("acl") {
-		acl := resourceNhncloudNasStorageVolumeACL(d)
+		acl := resourceToNasStorageVolumeACL(d)
 		updateOpts.ACL = &acl
 	}
 	if d.HasChange("mount_protocol") {
@@ -283,15 +283,15 @@ func resourceNhncloudNasStorageVolumeV1Update(ctx context.Context, d *schema.Res
 		return diag.Errorf("Error updating NHN Cloud NAS storage volume: %s", err)
 	}
 
-	err = waitForUpdateNhncloudNasStorageVolume(ctx, d, nasStorageClient, d.Id())
+	err = waitForUpdateNasStorageVolume(ctx, d, nasStorageClient, d.Id())
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume %s to update: %s", d.Id(), err)
 	}
 
-	return resourceNhncloudNasStorageVolumeV1Read(ctx, d, meta)
+	return resourceNasStorageVolumeV1Read(ctx, d, meta)
 }
 
-func resourceNhncloudNasStorageVolumeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 	nasStorageClient, err := config.NasStorageV1Client(GetRegion(d, config))
 	if err != nil {
@@ -302,7 +302,7 @@ func resourceNhncloudNasStorageVolumeV1Delete(ctx context.Context, d *schema.Res
 		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_nas_storage_volume_v1"))
 	}
 
-	err = waitForDeleteNhncloudNasStorageVolume(ctx, d, nasStorageClient, d.Id())
+	err = waitForDeleteNasStorageVolume(ctx, d, nasStorageClient, d.Id())
 	if err != nil {
 		return diag.Errorf(
 			"Error waiting for nhncloud_nas_storage_volume_v1 %s to delete: %s", d.Id(), err)
@@ -311,7 +311,7 @@ func resourceNhncloudNasStorageVolumeV1Delete(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func resourceNhncloudNasStorageVolumeACL(d *schema.ResourceData) []string {
+func resourceToNasStorageVolumeACL(d *schema.ResourceData) []string {
 	rawACLs := d.Get("acl").(*schema.Set).List()
 	acls := make([]string, len(rawACLs))
 	for i, raw := range rawACLs {
@@ -391,7 +391,7 @@ func resourceToNasStorageVolumeSnapshotPolicySchedule(snapshotPolicy map[string]
 	}
 }
 
-func flattenNhncloudNasStorageVolumeEncryption(encryption *volumes.Encryption) []any {
+func flattenNasStorageVolumeEncryption(encryption *volumes.Encryption) []any {
 	if encryption == nil {
 		return nil
 	}
@@ -412,7 +412,7 @@ func flattenNhncloudNasStorageVolumeEncryption(encryption *volumes.Encryption) [
 	return []any{flattenEncryption}
 }
 
-func flattenNhncloudNasStorageVolumeMountProtocol(mountProtocol *volumes.MountProtocol) []any {
+func flattenNasStorageVolumeMountProtocol(mountProtocol *volumes.MountProtocol) []any {
 	if mountProtocol == nil {
 		return nil
 	}
@@ -423,7 +423,7 @@ func flattenNhncloudNasStorageVolumeMountProtocol(mountProtocol *volumes.MountPr
 	}}
 }
 
-func flattenNhncloudNasStorageVolumeSnapshotPolicy(snapshotPolicy *volumes.SnapshotPolicy) []any {
+func flattenNasStorageVolumeSnapshotPolicy(snapshotPolicy *volumes.SnapshotPolicy) []any {
 	if snapshotPolicy == nil {
 		return nil
 	}
@@ -431,11 +431,11 @@ func flattenNhncloudNasStorageVolumeSnapshotPolicy(snapshotPolicy *volumes.Snaps
 	return []any{map[string]any{
 		"max_scheduled_count": snapshotPolicy.MaxScheduledCount,
 		"reserve_percent":     snapshotPolicy.ReservePercent,
-		"schedule":            flattenNhncloudNasStorageVolumeSnapshotPolicySchedule(snapshotPolicy.Schedule),
+		"schedule":            flattenNasStorageVolumeSnapshotPolicySchedule(snapshotPolicy.Schedule),
 	}}
 }
 
-func flattenNhncloudNasStorageVolumeSnapshotPolicySchedule(schedule *volumes.Schedule) []any {
+func flattenNasStorageVolumeSnapshotPolicySchedule(schedule *volumes.Schedule) []any {
 	if schedule == nil {
 		return nil
 	}
@@ -447,7 +447,7 @@ func flattenNhncloudNasStorageVolumeSnapshotPolicySchedule(schedule *volumes.Sch
 	}}
 }
 
-func waitForCreateNhncloudNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
+func waitForCreateNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"BUILDING", "INITIALIZING"},
 		Target:     []string{"ACTIVE"},
@@ -461,7 +461,7 @@ func waitForCreateNhncloudNasStorageVolume(ctx context.Context, d *schema.Resour
 	return err
 }
 
-func waitForUpdateNhncloudNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
+func waitForUpdateNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"UPDATING"},
 		Target:     []string{"ACTIVE"},
@@ -475,7 +475,7 @@ func waitForUpdateNhncloudNasStorageVolume(ctx context.Context, d *schema.Resour
 	return err
 }
 
-func waitForDeleteNhncloudNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
+func waitForDeleteNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"ACTIVE", "DELETING"},
 		Target:     []string{"DELETED"},

@@ -14,12 +14,12 @@ import (
 	"github.com/nhn-cloud/nhncloud.gophercloud/nhncloud/nas/v1/volumes"
 )
 
-func resourceNhncloudNasStorageVolumeMirrorV1() *schema.Resource {
+func resourceNasStorageVolumeMirrorV1() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceNhncloudNasStorageVolumeMirrorV1Create,
-		ReadContext:   resourceNhncloudNasStorageVolumeMirrorV1Read,
-		UpdateContext: resourceNhncloudNasStorageVolumeMirrorV1Update,
-		DeleteContext: resourceNhncloudNasStorageVolumeMirrorV1Delete,
+		CreateContext: resourceNasStorageVolumeMirrorV1Create,
+		ReadContext:   resourceNasStorageVolumeMirrorV1Read,
+		UpdateContext: resourceNasStorageVolumeMirrorV1Update,
+		DeleteContext: resourceNasStorageVolumeMirrorV1Delete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -232,7 +232,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1() *schema.Resource {
 	}
 }
 
-func resourceNhncloudNasStorageVolumeMirrorV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeMirrorV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 
 	srcRegion := getNasStorageVolumeMirrorV1SrcRegion(d, config)
@@ -253,10 +253,10 @@ func resourceNhncloudNasStorageVolumeMirrorV1Create(ctx context.Context, d *sche
 			Name:           dstVolume["name"].(string),
 			Description:    dstVolume["description"].(string),
 			SizeGb:         dstVolume["size_gb"].(int),
-			ACL:            resourceNhncloudNasStorageVolumeMirrorACL(dstVolume),
-			Encryption:     resourceNhncloudNasStorageVolumeMirrorEncryption(dstVolume),
-			MountProtocol:  resourceNhncloudNasStorageVolumeMirrorMountProtocol(dstVolume),
-			SnapshotPolicy: resourceNhncloudNasStorageVolumeMirrorSnapshotPolicy(dstVolume),
+			ACL:            resourceToNasStorageVolumeMirrorACL(dstVolume),
+			Encryption:     resourceToNasStorageVolumeMirrorEncryption(dstVolume),
+			MountProtocol:  resourceToNasStorageVolumeMirrorMountProtocol(dstVolume),
+			SnapshotPolicy: resourceToNasStorageVolumeMirrorSnapshotPolicy(dstVolume),
 		},
 	}
 
@@ -267,18 +267,18 @@ func resourceNhncloudNasStorageVolumeMirrorV1Create(ctx context.Context, d *sche
 
 	d.SetId(v.ID)
 
-	err = waitForCreateNhncloudNasStorageVolumeMirror(ctx, d, nasStorageClient, srcVolumeID, v.ID)
+	err = waitForCreateNasStorageVolumeMirror(ctx, d, nasStorageClient, srcVolumeID, v.ID)
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume mirror %s to become ready: %s", d.Id(), err)
 	}
 
-	return resourceNhncloudNasStorageVolumeMirrorV1Read(ctx, d, meta)
+	return resourceNasStorageVolumeMirrorV1Read(ctx, d, meta)
 }
 
-func resourceNhncloudNasStorageVolumeMirrorV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeMirrorV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 
-	mirror, err := getNhncloudNasStorageVolumeMirrorV1(d, config)
+	mirror, err := getNasStorageVolumeMirrorV1(d, config)
 	if err != nil {
 		return diag.FromErr(CheckDeleted(d, err, fmt.Sprintf("Error getting NHN Cloud NAS storage volume %s mirror", d.Get("src_volume_id").(string))))
 	}
@@ -287,7 +287,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Read(ctx context.Context, d *schema
 		return nil
 	}
 
-	dstVolume, err := getNhncloudNasStorageVolumeMirrorV1DstVolume(config, mirror.DstRegion, mirror.DstVolumeID)
+	dstVolume, err := getNasStorageVolumeMirrorV1DstVolume(config, mirror.DstRegion, mirror.DstVolumeID)
 	if err != nil {
 		return diag.Errorf("Error getting NHN Cloud NAS storage volume mirror %s: %s", d.Id(), err)
 	}
@@ -306,12 +306,12 @@ func resourceNhncloudNasStorageVolumeMirrorV1Read(ctx context.Context, d *schema
 	d.Set("src_volume_id", mirror.SrcVolumeID)
 	d.Set("src_volume_name", mirror.SrcVolumeName)
 	d.Set("created_at", mirror.CreatedAt)
-	d.Set("dst_volume", flattenNhncloudNasStorageVolumeMirrorDstVolume(dstVolume))
+	d.Set("dst_volume", flattenNasStorageVolumeMirrorDstVolume(dstVolume))
 
 	return nil
 }
 
-func resourceNhncloudNasStorageVolumeMirrorV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeMirrorV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 
 	dstRegionID := d.Get("dst_region").(string)
@@ -333,15 +333,15 @@ func resourceNhncloudNasStorageVolumeMirrorV1Update(ctx context.Context, d *sche
 		return diag.Errorf("Error updating NHN Cloud NAS storage volume mirror: %s", err)
 	}
 
-	err = waitForUpdateNhncloudNasStorageVolume(ctx, d, nasStorageClient, dstVolumeID)
+	err = waitForUpdateNasStorageVolume(ctx, d, nasStorageClient, dstVolumeID)
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume %s to update: %s", d.Id(), err)
 	}
 
-	return resourceNhncloudNasStorageVolumeMirrorV1Read(ctx, d, meta)
+	return resourceNasStorageVolumeMirrorV1Read(ctx, d, meta)
 }
 
-func resourceNhncloudNasStorageVolumeMirrorV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNasStorageVolumeMirrorV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	config := meta.(*Config)
 
 	srcRegion := getNasStorageVolumeMirrorV1SrcRegion(d, config)
@@ -358,7 +358,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Delete(ctx context.Context, d *sche
 		return diag.FromErr(CheckDeleted(d, err, "Error deleting nhncloud_nas_storage_volume_mirror_v1"))
 	}
 
-	err = waitForDeleteNhncloudNasStorageVolumeMirror(ctx, d, nasStorageClient, srcVolumeID, d.Id())
+	err = waitForDeleteNasStorageVolumeMirror(ctx, d, nasStorageClient, srcVolumeID, d.Id())
 	if err != nil {
 		return diag.Errorf("Error waiting for NHN Cloud NAS storage volume mirror %s to be deleted: %s", d.Id(), err)
 	}
@@ -366,7 +366,7 @@ func resourceNhncloudNasStorageVolumeMirrorV1Delete(ctx context.Context, d *sche
 	return nil
 }
 
-func resourceNhncloudNasStorageVolumeMirrorACL(dstVolume map[string]any) []string {
+func resourceToNasStorageVolumeMirrorACL(dstVolume map[string]any) []string {
 	rawACLs := dstVolume["acl"].(*schema.Set).List()
 	acls := make([]string, len(rawACLs))
 	for i, raw := range rawACLs {
@@ -375,7 +375,7 @@ func resourceNhncloudNasStorageVolumeMirrorACL(dstVolume map[string]any) []strin
 	return acls
 }
 
-func resourceNhncloudNasStorageVolumeMirrorEncryption(dstVolume map[string]any) *volumes.EncryptionOpts {
+func resourceToNasStorageVolumeMirrorEncryption(dstVolume map[string]any) *volumes.EncryptionOpts {
 	rawEncryptionList := dstVolume["encryption"].([]any)
 	if len(rawEncryptionList) == 0 {
 		return nil
@@ -388,7 +388,7 @@ func resourceNhncloudNasStorageVolumeMirrorEncryption(dstVolume map[string]any) 
 	return encryption
 }
 
-func resourceNhncloudNasStorageVolumeMirrorMountProtocol(dstVolume map[string]any) *volumes.MountProtocolOpts {
+func resourceToNasStorageVolumeMirrorMountProtocol(dstVolume map[string]any) *volumes.MountProtocolOpts {
 	rawMountProtocolList := dstVolume["mount_protocol"].([]any)
 	if len(rawMountProtocolList) == 0 {
 		return nil
@@ -407,7 +407,7 @@ func resourceNhncloudNasStorageVolumeMirrorMountProtocol(dstVolume map[string]an
 	}
 }
 
-func resourceNhncloudNasStorageVolumeMirrorSnapshotPolicy(dstVolume map[string]any) *volumes.SnapshotPolicyOpts {
+func resourceToNasStorageVolumeMirrorSnapshotPolicy(dstVolume map[string]any) *volumes.SnapshotPolicyOpts {
 	rawSnapshotPolicyList := dstVolume["snapshot_policy"].([]any)
 	if len(rawSnapshotPolicyList) == 0 {
 		return nil
@@ -420,12 +420,12 @@ func resourceNhncloudNasStorageVolumeMirrorSnapshotPolicy(dstVolume map[string]a
 		opts.MaxScheduledCount = &maxScheduledCount
 	}
 	opts.ReservePercent = rawSnapshotPolicy["reserve_percent"].(int)
-	opts.Schedule = resourceNhncloudNasStorageVolumeMirrorSnapshotPolicySchedule(rawSnapshotPolicy)
+	opts.Schedule = resourceToNasStorageVolumeMirrorSnapshotPolicySchedule(rawSnapshotPolicy)
 
 	return opts
 }
 
-func resourceNhncloudNasStorageVolumeMirrorSnapshotPolicySchedule(snapshotPolicy map[string]any) *volumes.ScheduleOpts {
+func resourceToNasStorageVolumeMirrorSnapshotPolicySchedule(snapshotPolicy map[string]any) *volumes.ScheduleOpts {
 	scheduleList := snapshotPolicy["schedule"].([]any)
 	if len(scheduleList) == 0 {
 		return nil
@@ -445,7 +445,7 @@ func resourceNhncloudNasStorageVolumeMirrorSnapshotPolicySchedule(snapshotPolicy
 	}
 }
 
-func waitForCreateNhncloudNasStorageVolumeMirror(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, mirrorID string) error {
+func waitForCreateNasStorageVolumeMirror(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, mirrorID string) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"PENDING"},
 		Target:     []string{"ACTIVE"},
@@ -458,7 +458,7 @@ func waitForCreateNhncloudNasStorageVolumeMirror(ctx context.Context, d *schema.
 	return err
 }
 
-func waitForDeleteNhncloudNasStorageVolumeMirror(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, mirrorID string) error {
+func waitForDeleteNasStorageVolumeMirror(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, volumeID, mirrorID string) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"ACTIVE", "DELETING"},
 		Target:     []string{"DELETED"},
@@ -491,7 +491,7 @@ func nasStorageVolumeMirrorV1RefreshFunc(client *gophercloud.ServiceClient, volu
 	}
 }
 
-func getNhncloudNasStorageVolumeMirrorV1(d *schema.ResourceData, config *Config) (*volumes.Mirror, error) {
+func getNasStorageVolumeMirrorV1(d *schema.ResourceData, config *Config) (*volumes.Mirror, error) {
 	srcRegion := getNasStorageVolumeMirrorV1SrcRegion(d, config)
 	nasStorageClient, err := config.NasStorageV1Client(srcRegion)
 	if err != nil {
@@ -514,7 +514,7 @@ func getNhncloudNasStorageVolumeMirrorV1(d *schema.ResourceData, config *Config)
 	return volume.Mirrors[index], nil
 }
 
-func getNhncloudNasStorageVolumeMirrorV1DstVolume(config *Config, dstRegionID, dstVolumeID string) (*volumes.Volume, error) {
+func getNasStorageVolumeMirrorV1DstVolume(config *Config, dstRegionID, dstVolumeID string) (*volumes.Volume, error) {
 	nasStorageClient, err := config.NasStorageV1Client(dstRegionID)
 	if err != nil {
 		return nil, err
@@ -528,7 +528,7 @@ func getNhncloudNasStorageVolumeMirrorV1DstVolume(config *Config, dstRegionID, d
 	return volume, nil
 }
 
-func flattenNhncloudNasStorageVolumeMirrorDstVolume(dstVolume *volumes.Volume) []any {
+func flattenNasStorageVolumeMirrorDstVolume(dstVolume *volumes.Volume) []any {
 	return []any{map[string]any{
 		"name":        dstVolume.Name,
 		"description": dstVolume.Description,
@@ -544,12 +544,12 @@ func flattenNhncloudNasStorageVolumeMirrorDstVolume(dstVolume *volumes.Volume) [
 		"snapshot_policy": []any{map[string]any{
 			"max_scheduled_count": dstVolume.SnapshotPolicy.MaxScheduledCount,
 			"reserve_percent":     dstVolume.SnapshotPolicy.ReservePercent,
-			"schedule":            flattenNhncloudNasStorageVolumeMirrorDstVolumeSnapshotPolicySchedule(dstVolume.SnapshotPolicy.Schedule),
+			"schedule":            flattenNasStorageVolumeMirrorDstVolumeSnapshotPolicySchedule(dstVolume.SnapshotPolicy.Schedule),
 		}},
 	}}
 }
 
-func flattenNhncloudNasStorageVolumeMirrorDstVolumeSnapshotPolicySchedule(schedule *volumes.Schedule) []any {
+func flattenNasStorageVolumeMirrorDstVolumeSnapshotPolicySchedule(schedule *volumes.Schedule) []any {
 	if schedule == nil {
 		return nil
 	}
