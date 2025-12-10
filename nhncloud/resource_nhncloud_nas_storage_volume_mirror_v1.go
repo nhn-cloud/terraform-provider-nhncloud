@@ -412,14 +412,17 @@ func resourceNhncloudNasStorageVolumeMirrorSnapshotPolicy(dstVolume map[string]a
 	if len(rawSnapshotPolicyList) == 0 {
 		return nil
 	}
-
 	rawSnapshotPolicy := rawSnapshotPolicyList[0].(map[string]any)
-	snapshotPolicy := &volumes.SnapshotPolicyOpts{
-		MaxScheduledCount: rawSnapshotPolicy["max_scheduled_count"].(int),
-		ReservePercent:    rawSnapshotPolicy["reserve_percent"].(int),
-		Schedule:          resourceNhncloudNasStorageVolumeMirrorSnapshotPolicySchedule(rawSnapshotPolicy),
+
+	opts := &volumes.SnapshotPolicyOpts{}
+	maxScheduledCount := rawSnapshotPolicy["max_scheduled_count"].(int)
+	if maxScheduledCount > 0 {
+		opts.MaxScheduledCount = &maxScheduledCount
 	}
-	return snapshotPolicy
+	opts.ReservePercent = rawSnapshotPolicy["reserve_percent"].(int)
+	opts.Schedule = resourceNhncloudNasStorageVolumeMirrorSnapshotPolicySchedule(rawSnapshotPolicy)
+
+	return opts
 }
 
 func resourceNhncloudNasStorageVolumeMirrorSnapshotPolicySchedule(snapshotPolicy map[string]any) *volumes.ScheduleOpts {

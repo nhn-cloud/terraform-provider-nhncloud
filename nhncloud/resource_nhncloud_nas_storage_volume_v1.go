@@ -271,11 +271,11 @@ func resourceNhncloudNasStorageVolumeV1Update(ctx context.Context, d *schema.Res
 		updateOpts.ACL = &acl
 	}
 	if d.HasChange("mount_protocol") {
-		mountProtocol := resourceToUpdateNasStorageVolumeMountProtocolOpts(d)
+		mountProtocol := resourceToNasStorageVolumeMountProtocol(d)
 		updateOpts.MountProtocol = mountProtocol
 	}
 	if d.HasChange("snapshot_policy") {
-		snapshotPolicy := resourceToUpdateNasStorageVolumeSnapshotPolicyOpts(ctx, d)
+		snapshotPolicy := resourceToNasStorageVolumeSnapshotPolicy(d)
 		updateOpts.SnapshotPolicy = snapshotPolicy
 	}
 	_, err = volumes.Update(nasStorageClient, d.Id(), updateOpts).Extract()
@@ -356,13 +356,18 @@ func resourceToNasStorageVolumeSnapshotPolicy(d *schema.ResourceData) *volumes.S
 	if len(snapshotPolicyList) == 0 {
 		return nil
 	}
-
 	snapshotPolicy := snapshotPolicyList[0].(map[string]any)
-	return &volumes.SnapshotPolicyOpts{
-		MaxScheduledCount: snapshotPolicy["max_scheduled_count"].(int),
-		ReservePercent:    snapshotPolicy["reserve_percent"].(int),
-		Schedule:          resourceToNasStorageVolumeSnapshotPolicySchedule(snapshotPolicy),
+
+	opts := &volumes.SnapshotPolicyOpts{}
+
+	maxScheduledCount := snapshotPolicy["max_scheduled_count"].(int)
+	if maxScheduledCount > 0 {
+		opts.MaxScheduledCount = &maxScheduledCount
 	}
+	opts.ReservePercent = snapshotPolicy["reserve_percent"].(int)
+	opts.Schedule = resourceToNasStorageVolumeSnapshotPolicySchedule(snapshotPolicy)
+
+	return opts
 }
 
 func resourceToNasStorageVolumeSnapshotPolicySchedule(snapshotPolicy map[string]any) *volumes.ScheduleOpts {
@@ -440,66 +445,6 @@ func flattenNhncloudNasStorageVolumeSnapshotPolicySchedule(schedule *volumes.Sch
 		"time_offset": schedule.TimeOffset,
 		"weekdays":    schedule.Weekdays,
 	}}
-}
-
-func resourceToUpdateNasStorageVolumeMountProtocolOpts(d *schema.ResourceData) *volumes.UpdateMountProtocolOpts {
-	rawMountProtocolList := d.Get("mount_protocol").([]interface{})
-	if len(rawMountProtocolList) == 0 {
-		return nil
-	}
-
-	rawMountProtocol := rawMountProtocolList[0].(map[string]any)
-	rawCifsAuthIDs := rawMountProtocol["cifs_auth_ids"].(*schema.Set).List()
-	cifsAuthIDs := make([]string, len(rawCifsAuthIDs))
-	for i, raw := range rawCifsAuthIDs {
-		cifsAuthIDs[i] = raw.(string)
-	}
-
-	return &volumes.UpdateMountProtocolOpts{
-		CifsAuthIDs: cifsAuthIDs,
-		Protocol:    rawMountProtocol["protocol"].(string),
-	}
-}
-
-func resourceToUpdateNasStorageVolumeSnapshotPolicyOpts(ctx context.Context, d *schema.ResourceData) *volumes.UpdateSnapshotPolicyOpts {
-	opts := &volumes.UpdateSnapshotPolicyOpts{}
-
-	snapshotPolicyList := d.Get("snapshot_policy").([]interface{})
-	if len(snapshotPolicyList) == 0 {
-		return opts
-	}
-
-	snapshotPolicy := snapshotPolicyList[0].(map[string]any)
-	maxScheduledCount := snapshotPolicy["max_scheduled_count"].(int)
-	reservePercent := snapshotPolicy["reserve_percent"].(int)
-
-	if maxScheduledCount > 0 {
-		opts.MaxScheduledCount = &maxScheduledCount
-	}
-	opts.ReservePercent = &reservePercent
-	opts.Schedule = resourceToUpdateNasStorageVolumeSnapshotPolicySchedule(ctx, snapshotPolicy)
-
-	return opts
-}
-
-func resourceToUpdateNasStorageVolumeSnapshotPolicySchedule(ctx context.Context, snapshotPolicy map[string]any) *volumes.UpdateScheduleOpts {
-	scheduleList := snapshotPolicy["schedule"].([]interface{})
-	if len(scheduleList) == 0 {
-		return nil
-	}
-
-	schedule := scheduleList[0].(map[string]any)
-	rawWeekdays := schedule["weekdays"].(*schema.Set).List()
-	weekdays := make([]int, len(rawWeekdays))
-	for i, raw := range rawWeekdays {
-		weekdays[i] = raw.(int)
-	}
-
-	return &volumes.UpdateScheduleOpts{
-		Time:       schedule["time"].(string),
-		TimeOffset: schedule["time_offset"].(string),
-		Weekdays:   weekdays,
-	}
 }
 
 func waitForCreateNhncloudNasStorageVolume(ctx context.Context, d *schema.ResourceData, nasStorageClient *gophercloud.ServiceClient, id string) error {
