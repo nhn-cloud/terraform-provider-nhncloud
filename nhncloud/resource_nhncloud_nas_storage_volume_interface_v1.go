@@ -72,8 +72,8 @@ func resourceNasStorageVolumeInterfaceV1Create(ctx context.Context, d *schema.Re
 	config := meta.(*Config)
 
 	volumeID := d.Get("volume_id").(string)
-	config.Lock(volumeID)
-	defer config.Unlock(volumeID)
+	config.MutexKV.Lock(volumeID)
+	defer config.MutexKV.Unlock(volumeID)
 
 	nasStorageClient, err := config.NasStorageV1Client(GetRegion(d, config))
 	if err != nil {
@@ -116,6 +116,7 @@ func resourceNasStorageVolumeInterfaceV1Read(ctx context.Context, d *schema.Reso
 		return nil
 	}
 
+	d.Set("region", GetRegion(d, config))
 	d.Set("subnet_id", vInterface.SubnetID)
 	d.Set("path", vInterface.Path)
 	d.Set("tenant_id", vInterface.TenantID)
@@ -192,7 +193,7 @@ func nasStorageVolumeInterfaceV1RefreshFunc(client *gophercloud.ServiceClient, v
 		status := vInterface.Status
 		if status == "error" {
 			return vInterface, status, fmt.Errorf("The volume interface is in error status. " +
-				"Please check with your cloud admin or check the NAS Storage " +
+				"Please check with your cloud admin or check the NAS Storage. " +
 				"API logs to see why this error occurred.")
 		}
 

@@ -500,7 +500,7 @@ func nasStorageVolumeV1RefreshFunc(client *gophercloud.ServiceClient, id string)
 
 		if v.Status == "error" {
 			return v, v.Status, fmt.Errorf("The volume is in error status. " +
-				"Please check with your cloud admin or check the Nas Storage " +
+				"Please check with your cloud admin or check the Nas Storage. " +
 				"API logs to see why this error occurred.")
 		}
 
