@@ -320,11 +320,27 @@ func resourceNasStorageVolumeMirrorV1Update(ctx context.Context, d *schema.Resou
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
 
+	dstVolume := d.Get("dst_volume").([]any)[0].(map[string]any)
 	updateOpts := &volumes.UpdateOpts{}
-
 	if d.HasChange("dst_volume.0.description") {
 		description := d.Get("dst_volume.0.description").(string)
 		updateOpts.Description = &description
+	}
+	if d.HasChange("dst_volume.0.size_gb") {
+		sizeGb := d.Get("dst_volume.0.size_gb").(int)
+		updateOpts.SizeGb = &sizeGb
+	}
+	if d.HasChange("dst_volume.0.acl") {
+		acl := resourceToNasStorageVolumeMirrorACL(dstVolume)
+		updateOpts.ACL = &acl
+	}
+	if d.HasChange("dst_volume.0.mount_protocol") {
+		mountProtocol := resourceToNasStorageVolumeMirrorMountProtocol(dstVolume)
+		updateOpts.MountProtocol = mountProtocol
+	}
+	if d.HasChange("dst_volume.0.snapshot_policy") {
+		snapshotPolicy := resourceToNasStorageVolumeMirrorSnapshotPolicy(dstVolume)
+		updateOpts.SnapshotPolicy = snapshotPolicy
 	}
 
 	dstVolumeID := d.Get("dst_volume_id").(string)
