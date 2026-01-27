@@ -1,6 +1,6 @@
 module github.com/nhn-cloud/terraform-provider-nhncloud
 
-go 1.20
+go 1.21
 
 require (
 	github.com/gophercloud/gophercloud v1.14.1
