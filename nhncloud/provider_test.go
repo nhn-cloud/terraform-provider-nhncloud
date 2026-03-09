@@ -31,6 +31,7 @@ var (
 	osMagnumFlavor               = os.Getenv("OS_MAGNUM_FLAVOR")
 	osMagnumImage                = os.Getenv("OS_MAGNUM_IMAGE")
 	osNetworkID                  = os.Getenv("OS_NETWORK_ID")
+	osSubnetID                   = os.Getenv("OS_SUBNET_ID")
 	osPoolName                   = os.Getenv("OS_POOL_NAME")
 	osRegionName                 = os.Getenv("OS_REGION_NAME")
 	osSwiftEnvironment           = os.Getenv("OS_SWIFT_ENVIRONMENT")
@@ -46,6 +47,9 @@ var (
 	osHypervisorEnvironment      = os.Getenv("OS_HYPERVISOR_HOSTNAME")
 	osPortForwardingEnvironment  = os.Getenv("OS_PORT_FORWARDING_ENVIRONMENT")
 	osBlockStorageV2             = os.Getenv("OS_BLOCKSTORAGE_V2")
+	osNasStorageV1               = os.Getenv("OS_NAS_STORAGE_V1")
+	osNasStorageDstRegionName    = os.Getenv("OS_NAS_STORAGE_DST_REGION_NAME")
+	osNasStorageDstTenantID      = os.Getenv("OS_NAS_STORAGE_DST_TENANT_ID")
 	osMagnumHTTPProxy            = os.Getenv("OS_MAGNUM_HTTP_PROXY")
 	osMagnumHTTPSProxy           = os.Getenv("OS_MAGNUM_HTTPS_PROXY")
 	osMagnumNoProxy              = os.Getenv("OS_MAGNUM_NO_PROXY")
@@ -263,6 +267,24 @@ func testAccPreCheckGlanceImport(t *testing.T) {
 func testAccPreCheckHypervisor(t *testing.T) {
 	if osHypervisorEnvironment == "" {
 		t.Skip("This environment does not support Hypervisor data source tests")
+	}
+}
+
+func testAccPreCheckNasStorageV1(t *testing.T) {
+	if osNasStorageV1 == "" {
+		t.Skip("This environment does not support NAS Storage V1 tests")
+	}
+
+	if osSubnetID == "" {
+		t.Fatal("OS_SUBNET_ID required to support NAS Storage V1 tests")
+	}
+
+	if osNasStorageDstRegionName == "" {
+		t.Fatal("OS_NAS_STORAGE_DST_REGION_NAME required to support NAS Storage V1 tests")
+	}
+
+	if osNasStorageDstTenantID == "" {
+		t.Fatal("OS_NAS_STORAGE_DST_TENANT_ID required to support NAS Storage V1 tests")
 	}
 }
 

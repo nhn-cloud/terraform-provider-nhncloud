@@ -1,13 +1,13 @@
 module github.com/nhn-cloud/terraform-provider-nhncloud
 
-go 1.20
+go 1.21
 
 require (
 	github.com/gophercloud/gophercloud v1.14.1
 	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.32.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/nhn-cloud/nhncloud.gophercloud v1.0.10
+	github.com/nhn-cloud/nhncloud.gophercloud v1.0.11
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/yaml.v2 v2.4.0
 )
