@@ -500,7 +500,8 @@ func testAccAuthFromEnv() (*Config, error) {
 	}
 
 	config := Config{
-		auth.Config{
+		tenantClients: make(map[string]*gophercloud.ProviderClient),
+		Config: auth.Config{
 			CACertFile:                  os.Getenv("OS_CACERT"),
 			ClientCertFile:              os.Getenv("OS_CERT"),
 			ClientKeyFile:               os.Getenv("OS_KEY"),
