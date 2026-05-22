@@ -277,8 +277,10 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		for i, addon := range addonList {
 			addonMap := addon.(map[string]interface{})
 			addonOpts := clusters.Addon{
-				Name:    addonMap["name"].(string),
-				Version: addonMap["version"].(string),
+				Name: addonMap["name"].(string),
+			}
+			if v := addonMap["version"].(string); v != "" {
+				addonOpts.Version = v
 			}
 
 			if options, ok := addonMap["options"]; ok && options != nil {
