@@ -34,7 +34,8 @@ resource "nhncloud_kubernetes_cluster_v1" "my_cluster" {
     strict_sg_rules               = "false"
   }
 
-  # Required addons configuration
+  # Optional addons configuration
+  # If omitted, API installs default addons automatically
   addons {
     name    = "calico"
     version = "v3.28.2-nks1"
@@ -63,7 +64,7 @@ The following arguments are supported:
 * `keypair` - (Required) Keypair name for SSH access. Changing this creates a new cluster.
 * `node_count` - (Optional) Initial number of worker nodes for the default node group. Defaults to 1 if not specified.
 * `labels` - (Required) Cluster labels (key-value pairs for cluster configuration). Changing this creates a new cluster.
-* `addons` - (Required) List of addons to install (CNI and CoreDNS are required). Changing this creates a new cluster.
+* `addons` - (Optional) List of addons to install. If omitted, API installs default addons (calico, coredns, etc.) automatically. Changing this creates a new cluster.
 
 ### Labels Configuration
 
@@ -95,8 +96,10 @@ Optional labels include:
 The `addons` block supports:
 
 * `name` - (Required) Addon name (e.g., "calico", "coredns").
-* `version` - (Required) Addon version.
+* `version` - (Optional) Addon version.
 * `options` - (Optional) Addon-specific options (key-value pairs).
+
+**Note:** When `addons` block is omitted entirely, the API installs default addons with their latest versions. When `addons` is specified but `version` is omitted, the API selects the latest compatible version for the specified addon.
 
 ## Attributes Reference
 
