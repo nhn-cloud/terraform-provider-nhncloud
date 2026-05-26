@@ -451,10 +451,17 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	// Build a map of API addons by name for easy lookup
-	apiAddonsByName := make(map[string]clusters.Addon)
-	for _, addon := range s.Addons {
-		apiAddonsByName[addon.Name] = addon
+	// Get installed addons from separate API (cluster Get API doesn't include addons)
+	installedAddons, err := clusters.GetAddons(kubernetesClient, d.Id()).Extract()
+	if err != nil {
+		log.Printf("[DEBUG] Unable to get addons for nhncloud_kubernetes_cluster_v1 %s: %s", d.Id(), err)
+		installedAddons = nil
+	}
+
+	// Build a map of installed addons by name for easy lookup
+	installedAddonsByName := make(map[string]clusters.InstalledAddon)
+	for _, addon := range installedAddons {
+		installedAddonsByName[addon.Name] = addon
 	}
 
 	hasConfigAddons := false
@@ -482,11 +489,11 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 						normalizedAddon["name"] = addonName
 					}
 
-					// For version: use config value if provided, otherwise get from API response
+					// For version: use config value if provided, otherwise get from installed addons API
 					if versionVal, exists := addonMap["version"]; exists && versionVal.IsKnown() && !versionVal.IsNull() {
 						normalizedAddon["version"] = versionVal.AsString()
-					} else if apiAddon, found := apiAddonsByName[addonName]; found {
-						normalizedAddon["version"] = apiAddon.Version
+					} else if installedAddon, found := installedAddonsByName[addonName]; found {
+						normalizedAddon["version"] = installedAddon.Version
 					}
 
 					if optionsVal, exists := addonMap["options"]; exists &&
@@ -514,10 +521,10 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	// If no addons in config, use addons from API response (for Computed behavior)
-	if !hasConfigAddons && len(s.Addons) > 0 {
-		apiAddons := make([]map[string]interface{}, len(s.Addons))
-		for i, addon := range s.Addons {
+	// If no addons in config, use installed addons from separate API (for Computed behavior)
+	if !hasConfigAddons && len(installedAddons) > 0 {
+		addonsForState := make([]map[string]interface{}, len(installedAddons))
+		for i, addon := range installedAddons {
 			addonMap := map[string]interface{}{
 				"name":    addon.Name,
 				"version": addon.Version,
@@ -533,10 +540,10 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 				}
 				addonMap["options"] = optionsMap
 			}
-			apiAddons[i] = addonMap
+			addonsForState[i] = addonMap
 		}
-		if err := d.Set("addons", apiAddons); err != nil {
-			log.Printf("[DEBUG] Unable to set addons from API response: %s", err)
+		if err := d.Set("addons", addonsForState); err != nil {
+			log.Printf("[DEBUG] Unable to set addons from installed addons API: %s", err)
 		}
 	}
 
