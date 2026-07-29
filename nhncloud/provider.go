@@ -536,6 +536,7 @@ func configureProvider(d *schema.ResourceData, terraformVersion string) (interfa
 	}
 
 	config := Config{
+		tenantClients: make(map[string]*gophercloud.ProviderClient),
 		Config: auth.Config{
 			CACertFile:                  d.Get("cacert_file").(string),
 			ClientCertFile:              d.Get("cert").(string),

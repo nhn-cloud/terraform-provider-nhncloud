@@ -213,7 +213,8 @@ func resourceKubernetesClusterV1() *schema.Resource {
 
 			"addons": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -223,7 +224,8 @@ func resourceKubernetesClusterV1() *schema.Resource {
 						},
 						"version": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+							Computed: true,
 						},
 						"options": {
 							Type:     schema.TypeMap,
@@ -275,8 +277,10 @@ func resourceKubernetesClusterV1Create(ctx context.Context, d *schema.ResourceDa
 		for i, addon := range addonList {
 			addonMap := addon.(map[string]interface{})
 			addonOpts := clusters.Addon{
-				Name:    addonMap["name"].(string),
-				Version: addonMap["version"].(string),
+				Name: addonMap["name"].(string),
+			}
+			if v := addonMap["version"].(string); v != "" {
+				addonOpts.Version = v
 			}
 
 			if options, ok := addonMap["options"]; ok && options != nil {
@@ -447,50 +451,92 @@ func resourceKubernetesClusterV1Read(_ context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	// Build a map of API addons by name for easy lookup
+	apiAddonsByName := make(map[string]clusters.Addon)
+	for _, addon := range s.Addons {
+		apiAddonsByName[addon.Name] = addon
+	}
+
+	hasConfigAddons := false
 	if !rawConfig.IsNull() && rawConfig.Type().HasAttribute("addons") {
 		configAddonsAttr := rawConfig.GetAttr("addons")
 		if configAddonsAttr.IsKnown() && !configAddonsAttr.IsNull() &&
 			(configAddonsAttr.Type().IsListType() || configAddonsAttr.Type().IsTupleType()) {
 
 			addonsValues := configAddonsAttr.AsValueSlice()
-			normalizedAddons := make([]map[string]interface{}, len(addonsValues))
+			if len(addonsValues) > 0 {
+				hasConfigAddons = true
+				normalizedAddons := make([]map[string]interface{}, len(addonsValues))
 
-			for i, addonVal := range addonsValues {
-				if !addonVal.Type().IsObjectType() {
-					continue
-				}
+				for i, addonVal := range addonsValues {
+					if !addonVal.Type().IsObjectType() {
+						continue
+					}
 
-				addonMap := addonVal.AsValueMap()
-				normalizedAddon := make(map[string]interface{})
+					addonMap := addonVal.AsValueMap()
+					normalizedAddon := make(map[string]interface{})
 
-				if nameVal, exists := addonMap["name"]; exists && nameVal.IsKnown() && !nameVal.IsNull() {
-					normalizedAddon["name"] = nameVal.AsString()
-				}
-				if versionVal, exists := addonMap["version"]; exists && versionVal.IsKnown() && !versionVal.IsNull() {
-					normalizedAddon["version"] = versionVal.AsString()
-				}
+					var addonName string
+					if nameVal, exists := addonMap["name"]; exists && nameVal.IsKnown() && !nameVal.IsNull() {
+						addonName = nameVal.AsString()
+						normalizedAddon["name"] = addonName
+					}
 
-				if optionsVal, exists := addonMap["options"]; exists &&
-					optionsVal.IsKnown() && !optionsVal.IsNull() &&
-					(optionsVal.Type().IsMapType() || optionsVal.Type().IsObjectType()) {
+					// For version: use config value if provided, otherwise get from API response
+					if versionVal, exists := addonMap["version"]; exists && versionVal.IsKnown() && !versionVal.IsNull() {
+						normalizedAddon["version"] = versionVal.AsString()
+					} else if apiAddon, found := apiAddonsByName[addonName]; found {
+						normalizedAddon["version"] = apiAddon.Version
+					}
 
-					optionsMap := make(map[string]interface{})
-					for k, v := range optionsVal.AsValueMap() {
-						if v.IsKnown() && !v.IsNull() {
-							optionsMap[k] = v.AsString()
+					if optionsVal, exists := addonMap["options"]; exists &&
+						optionsVal.IsKnown() && !optionsVal.IsNull() &&
+						(optionsVal.Type().IsMapType() || optionsVal.Type().IsObjectType()) {
+
+						optionsMap := make(map[string]interface{})
+						for k, v := range optionsVal.AsValueMap() {
+							if v.IsKnown() && !v.IsNull() {
+								optionsMap[k] = v.AsString()
+							}
+						}
+						if len(optionsMap) > 0 {
+							normalizedAddon["options"] = optionsMap
 						}
 					}
-					if len(optionsMap) > 0 {
-						normalizedAddon["options"] = optionsMap
-					}
+
+					normalizedAddons[i] = normalizedAddon
 				}
 
-				normalizedAddons[i] = normalizedAddon
+				if err := d.Set("addons", normalizedAddons); err != nil {
+					log.Printf("[DEBUG] Unable to set addons: %s", err)
+				}
 			}
+		}
+	}
 
-			if err := d.Set("addons", normalizedAddons); err != nil {
-				log.Printf("[DEBUG] Unable to set addons: %s", err)
+	// If no addons in config, use addons from API response (for Computed behavior)
+	if !hasConfigAddons && len(s.Addons) > 0 {
+		apiAddons := make([]map[string]interface{}, len(s.Addons))
+		for i, addon := range s.Addons {
+			addonMap := map[string]interface{}{
+				"name":    addon.Name,
+				"version": addon.Version,
 			}
+			if addon.Options != nil && len(addon.Options) > 0 {
+				optionsMap := make(map[string]interface{})
+				for k, v := range addon.Options {
+					if strVal, ok := v.(string); ok {
+						optionsMap[k] = strVal
+					} else {
+						optionsMap[k] = fmt.Sprintf("%v", v)
+					}
+				}
+				addonMap["options"] = optionsMap
+			}
+			apiAddons[i] = addonMap
+		}
+		if err := d.Set("addons", apiAddons); err != nil {
+			log.Printf("[DEBUG] Unable to set addons from API response: %s", err)
 		}
 	}
 

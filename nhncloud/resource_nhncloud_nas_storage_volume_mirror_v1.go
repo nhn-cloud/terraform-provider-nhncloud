@@ -287,7 +287,7 @@ func resourceNasStorageVolumeMirrorV1Read(ctx context.Context, d *schema.Resourc
 		return nil
 	}
 
-	dstVolume, err := getNasStorageVolumeMirrorV1DstVolume(config, mirror.DstRegion, mirror.DstVolumeID)
+	dstVolume, err := getNasStorageVolumeMirrorV1DstVolume(config, mirror.DstRegion, mirror.DstTenantID, mirror.DstVolumeID)
 	if err != nil {
 		return diag.Errorf("Error getting NHN Cloud NAS storage volume mirror %s: %s", d.Id(), err)
 	}
@@ -315,7 +315,8 @@ func resourceNasStorageVolumeMirrorV1Update(ctx context.Context, d *schema.Resou
 	config := meta.(*Config)
 
 	dstRegionID := d.Get("dst_region").(string)
-	nasStorageClient, err := config.NasStorageV1Client(dstRegionID)
+	dstTenantID := d.Get("dst_tenant_id").(string)
+	nasStorageClient, err := config.NasStorageV1ClientForTenant(dstRegionID, dstTenantID)
 	if err != nil {
 		return diag.Errorf("Error creating NHN Cloud NAS storage client: %s", err)
 	}
@@ -530,8 +531,8 @@ func getNasStorageVolumeMirrorV1(d *schema.ResourceData, config *Config) (*volum
 	return volume.Mirrors[index], nil
 }
 
-func getNasStorageVolumeMirrorV1DstVolume(config *Config, dstRegionID, dstVolumeID string) (*volumes.Volume, error) {
-	nasStorageClient, err := config.NasStorageV1Client(dstRegionID)
+func getNasStorageVolumeMirrorV1DstVolume(config *Config, dstRegionID, dstTenantID, dstVolumeID string) (*volumes.Volume, error) {
+	nasStorageClient, err := config.NasStorageV1ClientForTenant(dstRegionID, dstTenantID)
 	if err != nil {
 		return nil, err
 	}
