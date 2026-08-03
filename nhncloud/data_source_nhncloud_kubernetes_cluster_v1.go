@@ -211,7 +211,10 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("status", c.Status)
 	d.Set("status_reason", c.StatusReason)
 
-	// Get installed addons from separate API
+	// Get installed addons from separate API. The addons endpoint requires a
+	// container-infra microversion; without the OpenStack-API-Version header the
+	// server negotiates the default version (1.1) and returns 406 Not Acceptable.
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
 	addonsResult, err := clusters.GetAddons(kubernetesClient, c.UUID).Extract()
 	if err != nil {
 		log.Printf("[DEBUG] Unable to get addons for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
