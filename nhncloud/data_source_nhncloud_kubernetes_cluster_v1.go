@@ -197,7 +197,6 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("container_version", c.ContainerVersion)
 	d.Set("create_timeout", c.CreateTimeout)
 	d.Set("docker_volume_size", c.DockerVolumeSize)
-	d.Set("flavor", c.FlavorID)
 	d.Set("keypair", c.KeyPair)
 	d.Set("node_count", c.NodeCount)
 	d.Set("node_addresses", c.NodeAddresses)
