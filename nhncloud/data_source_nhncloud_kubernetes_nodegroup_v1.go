@@ -147,8 +147,6 @@ func dataSourceKubernetesNodeGroupRead(ctx context.Context, d *schema.ResourceDa
 	d.Set("node_count", nodeGroup.NodeCount)
 	d.Set("min_node_count", nodeGroup.MinNodeCount)
 	d.Set("max_node_count", nodeGroup.MaxNodeCount)
-	d.Set("image", nodeGroup.ImageID)
-	d.Set("flavor", nodeGroup.FlavorID)
 	d.Set("image_id", nodeGroup.ImageID)
 	d.Set("flavor_id", nodeGroup.FlavorID)
 	d.Set("uuid", nodeGroup.UUID)
