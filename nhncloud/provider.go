@@ -259,6 +259,7 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"nhncloud_networking_internet_gateway_v2":           dataSourceNetworkingInternetGatewayV2(),
 			"nhncloud_blockstorage_availability_zones_v3":       dataSourceBlockStorageAvailabilityZonesV3(),
 			"nhncloud_blockstorage_snapshot_v2":                 dataSourceBlockStorageSnapshotV2(),
 			"nhncloud_blockstorage_snapshot_v3":                 dataSourceBlockStorageSnapshotV3(),
@@ -315,6 +316,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"nhncloud_networking_internet_gateway_v2":            resourceNetworkingInternetGatewayV2(),
 			"nhncloud_blockstorage_qos_association_v3":           resourceBlockStorageQosAssociationV3(),
 			"nhncloud_blockstorage_qos_v3":                       resourceBlockStorageQosV3(),
 			"nhncloud_blockstorage_quotaset_v2":                  resourceBlockStorageQuotasetV2(),
