@@ -2,6 +2,7 @@ package nhncloud
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -210,7 +211,37 @@ func dataSourceKubernetesClusterRead(ctx context.Context, d *schema.ResourceData
 	d.Set("status", c.Status)
 	d.Set("status_reason", c.StatusReason)
 
-	// TODO: Set api_ep_ipacl and addons when the structure is available in gophercloud
+	// Get installed addons from separate API. The addons endpoint requires a
+	// container-infra microversion; without the OpenStack-API-Version header the
+	// server negotiates the default version (1.1) and returns 406 Not Acceptable.
+	kubernetesClient.Microversion = kubernetesV1NodeGroupMinMicroversion
+	addonsResult, err := clusters.GetAddons(kubernetesClient, c.UUID).Extract()
+	if err != nil {
+		log.Printf("[DEBUG] Unable to get addons for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
+	} else if len(addonsResult) > 0 {
+		addons := make([]map[string]interface{}, len(addonsResult))
+		for i, addon := range addonsResult {
+			addonMap := map[string]interface{}{
+				"name":    addon.Name,
+				"version": addon.Version,
+			}
+			if len(addon.Options) > 0 {
+				optionsMap := make(map[string]interface{})
+				for k, v := range addon.Options {
+					if str, ok := v.(string); ok {
+						optionsMap[k] = str
+					} else {
+						optionsMap[k] = fmt.Sprintf("%v", v)
+					}
+				}
+				addonMap["options"] = optionsMap
+			}
+			addons[i] = addonMap
+		}
+		if err := d.Set("addons", addons); err != nil {
+			log.Printf("[DEBUG] Unable to set addons for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
+		}
+	}
 
 	if err := d.Set("labels", c.Labels); err != nil {
 		log.Printf("[DEBUG] Unable to set labels for nhncloud_kubernetes_cluster_v1 %s: %s", c.UUID, err)
